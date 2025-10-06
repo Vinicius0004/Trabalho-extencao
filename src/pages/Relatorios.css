@@ -1,0 +1,163 @@
+/* Styles for Relatórios page */
+.relatorios-page {
+	animation: fadeIn 0.8s ease;
+}
+
+.relatorios-page .controls { 
+	display: flex; 
+	gap: 16px; 
+	align-items: center; 
+	justify-content: space-between; 
+	padding: 20px;
+	background: var(--surface);
+	border-radius: var(--radius-xl);
+	box-shadow: var(--shadow-sm);
+	border: 1px solid rgba(255,255,255,0.08);
+	margin-bottom: 32px;
+}
+
+.relatorios-page .controls input { 
+	flex: 1; 
+	padding: 12px 18px; 
+	border-radius: var(--radius); 
+	border: 2px solid rgba(255,255,255,0.06); 
+	background: rgba(10,14,39,0.5);
+	color: var(--text);
+	transition: all 0.3s ease;
+}
+
+.relatorios-page .controls input:focus {
+	border-color: var(--accent);
+	box-shadow: 0 0 0 4px var(--accent-200);
+}
+
+.relatorios-page .student-list { 
+	display: flex; 
+	flex-direction: column; 
+	gap: 20px; 
+	margin-top: 24px;
+}
+
+.relatorios-page .student { 
+	display: flex; 
+	gap: 20px; 
+	align-items: center; 
+	padding: 24px;
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.relatorios-page .student:hover {
+	transform: translateY(-4px);
+	box-shadow: var(--shadow-xl);
+}
+
+.student-left { 
+	flex: 1;
+}
+
+.student-left h3 {
+	margin: 0 0 8px 0;
+	color: var(--text);
+	font-size: 1.2rem;
+}
+
+.student-mid { 
+	width: 280px; 
+	display: flex; 
+	flex-direction: column; 
+	gap: 10px;
+}
+
+.student-right { 
+	width: 280px; 
+	display: flex; 
+	flex-direction: column; 
+	gap: 12px; 
+	align-items: flex-end;
+}
+
+.mini-chart { 
+	background: transparent; 
+	border-radius: var(--radius);
+	padding: 8px;
+}
+
+.time-small { 
+	font-size: 0.85rem; 
+	color: var(--muted-text);
+	font-weight: 500;
+}
+
+.student-actions { 
+	display: flex; 
+	gap: 10px;
+}
+
+.status-bar { 
+	margin-top: 16px; 
+	padding: 12px 18px; 
+	background: var(--accent); 
+	color: #fff; 
+	border-radius: var(--radius);
+	box-shadow: var(--shadow-sm);
+	font-weight: 700;
+}
+
+.suggestion { 
+	margin-top: 12px; 
+	display: inline-flex;
+	align-items: center;
+	padding: 8px 16px; 
+	border-radius: 999px; 
+	font-weight: 700; 
+	font-size: 0.9rem;
+	border: 2px solid;
+	transition: all 0.3s ease;
+}
+
+.suggestion:hover {
+	transform: scale(1.05);
+}
+
+.suggestion-ok { 
+	background: rgba(16,185,129,0.15); 
+	color: var(--success);
+	border-color: rgba(16,185,129,0.3);
+}
+
+.suggestion-attention { 
+	background: rgba(251,191,36,0.15); 
+	color: var(--warning);
+	border-color: rgba(251,191,36,0.3);
+}
+
+.suggestion-support { 
+	background: rgba(244,63,94,0.15); 
+	color: var(--danger);
+	border-color: rgba(244,63,94,0.3);
+}
+
+.suggestion-none { 
+	background: rgba(168,85,247,0.1); 
+	color: var(--secondary);
+	border-color: rgba(168,85,247,0.3);
+}
+
+@media (max-width:900px) {
+	.relatorios-page .student { 
+		flex-direction: column; 
+		align-items: flex-start;
+		gap: 16px;
+	}
+	.student-mid, 
+	.student-right { 
+		width: 100%;
+	}
+	.student-right { 
+		align-items: flex-start;
+	}
+	.relatorios-page .controls {
+		flex-direction: column;
+		align-items: stretch;
+	}
+}

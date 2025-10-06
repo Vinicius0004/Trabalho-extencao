@@ -1,0 +1,15 @@
+/* Recuperar Senha styles */
+.recuperar-page .recuperar-card {
+  max-width: 420px;
+  margin: 32px auto;
+  padding: 22px;
+}
+.recuperar-form label { display:block; margin-top:12px; font-weight:600; }
+.recuperar-form input { width:100%; padding:10px 12px; margin-top:6px; border-radius:8px; border:1px solid var(--muted); background:var(--bg-card); }
+.recuperar-form .actions { display:flex; gap:10px; margin-top:16px; align-items:center; }
+.recuperar-form .status { margin-top:12px; color:var(--primary); font-weight:600; }
+.back-btn { margin-right:12px; background:transparent; border:0; color:var(--primary); font-weight:600; cursor:pointer; }
+.recuperar-card h1 { margin:0 0 12px 0; }
+
+.recuperar-form input[type="text"] { letter-spacing: 2px; font-weight:700; text-align:center }
+.recuperar-form input[type="password"] { letter-spacing: normal }

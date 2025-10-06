@@ -1,0 +1,68 @@
+/* Header container size */
+.header.site-container {
+	min-height: 72px;
+	padding: 0 32px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	position: relative;
+	max-width: 100%;
+	width: 100%;
+	margin: 0;
+}
+
+/* Header navigation styles */
+.nav {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+	justify-content: center;
+	flex-wrap: wrap;
+	position: relative;
+	z-index: 2;
+}
+
+.nav a{
+	font-size: 1rem;
+	color: var(--text);
+	text-decoration: none;
+	padding: 11px 20px;
+	border-radius: 12px;
+	font-weight: 600;
+	letter-spacing: 0.02em;
+	line-height: 1.5;
+}
+
+/* Slightly smaller on narrow screens */
+@media (max-width:1000px){
+	.nav a{
+		font-size: 0.85rem;
+		padding: 8px 14px;
+	}
+	.header.site-container {
+		padding: 0 20px;
+	}
+}
+
+@media (max-width:768px){
+	.nav {
+		flex-wrap: wrap;
+		gap: 6px;
+	}
+	.nav a{
+		font-size: 0.8rem;
+		padding: 6px 10px;
+	}
+}
+
+/* Logo image styles */
+.logo-img {
+	height: 32px !important;
+	width: auto !important;
+	max-width: 120px !important;
+	object-fit: contain;
+	margin-left: 12px;
+	vertical-align: middle;
+	display: inline-block;
+}
+

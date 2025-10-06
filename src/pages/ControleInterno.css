@@ -1,0 +1,88 @@
+.controleinterno-container {
+  max-width: 800px;
+  margin: 48px auto;
+  padding: 48px;
+}
+
+.controleinterno-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  max-width: 100%;
+  width: 100%;
+  background: var(--surface);
+  padding: 48px;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-xl);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.controleinterno-form h1,
+.controleinterno-form h2 {
+  margin-bottom: 32px;
+  text-align: center;
+  color: var(--success);
+}
+
+.controleinterno-form label {
+  display: flex;
+  flex-direction: column;
+  font-weight: 600;
+  color: var(--text);
+  font-size: 1rem;
+  letter-spacing: 0.02em;
+  margin-bottom: 8px;
+}
+
+.controleinterno-form input,
+.controleinterno-form select,
+.controleinterno-form textarea {
+  margin-top: 8px;
+  padding: 15px 20px;
+  border: 2px solid rgba(255,255,255,0.06);
+  border-radius: var(--radius);
+  font-size: 1.05rem;
+  background: rgba(10,14,39,0.5);
+  color: var(--text);
+  font-weight: 400;
+  line-height: 1.6;
+  letter-spacing: 0.01em;
+}
+
+.controleinterno-form input:focus,
+.controleinterno-form select:focus,
+.controleinterno-form textarea:focus {
+  outline: none;
+  border-color: var(--success);
+}
+
+.controleinterno-form textarea {
+  min-height: 140px;
+  resize: vertical;
+}
+
+.controleinterno-form button {
+  margin-top: 20px;
+  padding: 14px 32px;
+  background: var(--success);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+@media (max-width: 768px) {
+  .controleinterno-container {
+    padding: 24px;
+    margin: 24px auto;
+  }
+  
+  .controleinterno-form {
+    padding: 32px 24px;
+  }
+}

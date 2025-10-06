@@ -1,0 +1,211 @@
+.home-container { 
+	display:flex; 
+	flex-direction:column; 
+	min-height:100vh;
+}
+
+.header.site-container { 
+	padding-top: 16px; 
+	padding-bottom: 0;
+}
+
+.notification { 
+	margin: 24px 0; 
+	background: rgba(79,172,254,0.1); 
+	padding: 18px 24px; 
+	border-radius: 16px; 
+	border: 1px solid rgba(79,172,254,0.2); 
+	display: flex; 
+	justify-content: space-between; 
+	align-items: center;
+	box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+
+.notification p { 
+	color: var(--text);
+	margin: 0;
+}
+
+.main { 
+	flex: 1; 
+	padding: 48px 0; 
+	text-align: center;
+}
+
+.stats-container { 
+	margin-top: 32px; 
+	display: flex; 
+	justify-content: center;
+	gap: 32px;
+	align-items: flex-start;
+}
+
+.stats-hero { 
+	position: relative; 
+	display: flex; 
+	align-items: center; 
+	justify-content: center;
+	flex: 1;
+}
+
+.welcome-message {
+	background: var(--surface);
+	padding: 40px;
+	border-radius: var(--radius-xl);
+	border: 1px solid rgba(255,255,255,0.1);
+	box-shadow: var(--shadow-xl);
+	text-align: left;
+	max-width: 700px;
+}
+
+.welcome-message h2 {
+	margin: 0 0 20px;
+	font-size: 2rem;
+	color: var(--accent);
+}
+
+.welcome-message p {
+	color: var(--text-secondary);
+	margin-bottom: 20px;
+	line-height: 1.8;
+	font-size: 1.05rem;
+	font-weight: 400;
+}
+
+.welcome-message ul {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+.welcome-message ul li {
+	padding: 14px 0;
+	color: var(--text);
+	border-bottom: 1px solid rgba(255,255,255,0.05);
+	font-size: 1.02rem;
+	line-height: 1.6;
+	font-weight: 400;
+}
+
+.welcome-message ul li strong {
+	color: var(--accent);
+	font-weight: 700;
+}
+
+.stats-image { 
+	width: 100%; 
+	max-width: 920px; 
+	border-radius: var(--radius-xl); 
+	display: block;
+	box-shadow: var(--shadow-xl);
+}
+
+.stats-title { 
+	position: absolute; 
+	z-index: 3; 
+	color: var(--text); 
+	font-size: 2.8rem; 
+	background: rgba(10,14,39,0.8); 
+	padding: 20px 32px; 
+	border-radius: var(--radius-xl);
+	backdrop-filter: blur(20px);
+	box-shadow: var(--shadow-xl);
+}
+
+h1 { 
+	font-size: 2.8rem; 
+	margin-bottom: 16px;
+}
+
+/* Home reminders card */
+.home-reminders {
+	margin-left: 32px;
+	min-width: 380px;
+	max-width: 400px;
+}
+
+.reminders-card {
+	background: var(--surface);
+	border: 1px solid rgba(255,255,255,0.1);
+	box-shadow: var(--shadow-xl);
+}
+
+.reminders-card h3 {
+	margin: 0 0 20px;
+	font-size: 1.4rem;
+	color: var(--text);
+}
+
+.reminders-list {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.reminder-item {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	padding: 16px;
+	border-radius: 12px;
+	background: rgba(79,172,254,0.05);
+	border: 1px solid rgba(255,255,255,0.05);
+}
+
+.reminder-item.read {
+	opacity: 0.5;
+}
+
+.reminder-title {
+	font-weight: 600;
+	color: var(--text);
+	margin-bottom: 6px;
+	font-size: 1.05rem;
+	line-height: 1.5;
+	letter-spacing: 0.01em;
+}
+
+@media (max-width:900px){
+	.stats-container {
+		flex-direction: column;
+		align-items: center;
+	}
+	.home-reminders {
+		margin: 24px 0 0 0;
+		width: 100%;
+		max-width: 700px;
+	}
+	.welcome-message {
+		padding: 28px;
+	}
+}
+
+.reminders-card .btn {
+	padding: 8px 14px;
+	font-size: 0.85rem;
+}
+
+.reminders-card .btn.danger {
+	padding: 8px 14px;
+}
+
+/* Modal backdrop */
+.modal-backdrop {
+	position: fixed;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: rgba(0,0,0,0.75);
+	backdrop-filter: blur(8px);
+	z-index: 60;
+}
+
+.modal.card {
+	max-width: 480px;
+	padding: 32px;
+	box-shadow: var(--shadow-xl);
+}

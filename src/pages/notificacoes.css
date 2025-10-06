@@ -1,0 +1,39 @@
+.notificacoes-page { display:flex; flex-direction:column; min-height:100vh }
+
+.main.site-container { padding: 28px 0; display:flex; flex-direction:column; gap:18px }
+
+/* Center sections inside the main container so the page looks centered */
+.notificacoes-page .main.site-container { align-items: center }
+.notificacoes-page .main.site-container > section { width:100%; max-width:900px }
+
+
+.new-reminder { margin-bottom: 18px; padding: 18px; display:flex;flex-direction:column;gap:10px }
+.new-reminder-header{display:flex;align-items:center;gap:12px}
+.new-reminder-header h3{margin:0}
+.reminder-icon{font-size:1.3rem;background:linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.02));padding:8px;border-radius:8px}
+
+.reminder-grid{display:flex;flex-direction:column;gap:12px}
+.reminder-input{width:100%;min-height:120px;padding:12px;border-radius:10px}
+.reminder-row{display:flex;gap:12px;align-items:center}
+.reminder-date{width:220px;padding:8px;border-radius:8px}
+.reminder-form .add-btn{padding:10px 14px}
+.add-btn:disabled{opacity:0.55;cursor:not-allowed;transform:none;box-shadow:none}
+.reminder-help{margin:0;color:var(--muted-text)}
+
+.list-reminders h3 { margin-top:8px }
+
+.reminder-list { display:flex; flex-direction:column; gap:16px; margin-top:8px; width:100% }
+
+.reminder { display:flex; justify-content:space-between; align-items:center; padding:14px; border-radius:10px; background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.005)); border:1px solid rgba(255,255,255,0.03) }
+.reminder.read { opacity:0.75 }
+
+.reminder-left { display:flex; flex-direction:column }
+.reminder-title { font-weight:700 }
+.reminder-when { font-size:0.92rem }
+
+.reminder-actions { display:flex; gap:8px }
+
+@media (max-width: 800px) {
+  .reminder { flex-direction:column; align-items:flex-start; gap:8px }
+  .reminder-actions { width:100%; display:flex; justify-content:flex-end }
+}

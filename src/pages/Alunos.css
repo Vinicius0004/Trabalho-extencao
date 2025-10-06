@@ -1,0 +1,276 @@
+.alunos-container {
+	animation: fadeIn 0.8s ease;
+}
+
+.alunos-container .alunos-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin: 32px 0;
+	padding: 0 4px;
+}
+
+.alunos-container .alunos-header h1 {
+	margin: 0;
+}
+
+.alunos-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+	gap: 24px;
+}
+
+.aluno-card {
+	display: flex;
+	gap: 16px;
+	align-items: flex-start;
+	padding: 20px;
+	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.aluno-card:hover {
+	transform: translateY(-4px);
+	box-shadow: var(--shadow-xl);
+}
+
+.aluno-photo {
+	width: 80px;
+	height: 80px;
+	flex: 0 0 80px;
+	border-radius: var(--radius);
+	overflow: hidden;
+	background: var(--accent-200);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border: 2px solid rgba(79,172,254,0.2);
+}
+
+.aluno-photo img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.photo-placeholder {
+	color: var(--accent);
+	font-size: 14px;
+	font-weight: 600;
+}
+
+.aluno-info h3 {
+	margin: 0 0 8px 0;
+	color: var(--text);
+	font-size: 1.1rem;
+}
+
+.aluno-info .muted {
+	color: var(--muted-text);
+	font-size: 0.9rem;
+	margin: 4px 0;
+}
+
+.aluno-info .notes {
+	color: var(--text-secondary);
+	font-size: 0.9rem;
+	margin: 8px 0 4px;
+	line-height: 1.5;
+}
+
+.aluno-actions {
+	margin-left: auto;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.aluno-actions .btn {
+	padding: 8px 14px;
+	font-size: 0.85rem;
+}
+
+.aluno-top-row {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+}
+
+.aluno-name {
+	margin: 0;
+}
+
+.inline-actions {
+	margin-left: auto;
+	display: flex;
+	gap: 10px;
+}
+
+.btn.small {
+	padding: 8px 12px;
+	font-size: 0.85rem;
+}
+
+.empty {
+	padding: 48px;
+	border: 2px dashed rgba(79,172,254,0.3);
+	border-radius: var(--radius-xl);
+	text-align: center;
+	background: var(--accent-200);
+}
+.edit-modal {
+	position: fixed;
+	inset: 0;
+	background: rgba(0,0,0,0.75);
+	backdrop-filter: blur(8px);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 20px;
+	z-index: 60;
+	animation: backdropFadeIn 0.3s ease;
+}
+
+.edit-card {
+	width: 900px;
+	max-width: 95%;
+	padding: 40px;
+	display: flex;
+	flex-direction: column;
+	gap: 24px;
+	background: var(--surface);
+	border-radius: var(--radius-xl);
+	box-shadow: var(--shadow-xl);
+	border: 1px solid rgba(255,255,255,0.1);
+	max-height: 90vh;
+	overflow-y: auto;
+}
+
+.edit-card h2 {
+	margin: 0 0 20px 0;
+	color: var(--accent);
+	text-align: center;
+}
+
+.form-grid {
+	display: grid;
+	grid-template-columns: 1fr 280px;
+	gap: 32px;
+}
+
+.form-left-section,
+.form-right-section {
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+}
+
+@media (max-width: 768px) {
+	.form-grid {
+		grid-template-columns: 1fr;
+	}
+	
+	.form-right-section {
+		order: -1;
+	}
+}
+
+.form-row {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.form-row label {
+	font-weight: 700;
+	color: var(--text);
+	font-size: 0.95rem;
+	margin: 0;
+}
+
+.form-row input,
+.form-row textarea {
+	padding: 14px 18px;
+	border-radius: var(--radius);
+	border: 2px solid rgba(255,255,255,0.06);
+	background: rgba(10,14,39,0.5);
+	color: var(--text);
+	transition: all 0.3s ease;
+}
+
+.form-row input:focus,
+.form-row textarea:focus {
+	border-color: var(--accent);
+	box-shadow: 0 0 0 4px var(--accent-200);
+}
+
+.photo-row {
+	display: flex;
+	gap: 16px;
+	align-items: center;
+}
+
+.photo-controls {
+	display: flex;
+	gap: 12px;
+	align-items: center;
+	flex-direction: column;
+}
+
+.photo-preview {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.photo-preview img {
+	width: 120px;
+	height: 120px;
+	object-fit: cover;
+	border-radius: var(--radius);
+	box-shadow: var(--shadow-sm);
+	border: 2px solid rgba(79,172,254,0.2);
+}
+
+.photo-placeholder.small {
+	width: 120px;
+	height: 120px;
+	border-radius: var(--radius);
+	background: var(--accent-200);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--accent);
+	border: 2px dashed rgba(79,172,254,0.3);
+	font-weight: 600;
+}
+
+.modal-actions {
+	display: flex;
+	gap: 12px;
+	justify-content: flex-end;
+	margin-top: 16px;
+}
+
+.toast {
+	position: fixed;
+	right: 24px;
+	bottom: 24px;
+	background: var(--success);
+	color: white;
+	padding: 16px 20px;
+	border-radius: var(--radius);
+	z-index: 80;
+	box-shadow: var(--shadow-xl);
+	font-weight: 700;
+	border: 1px solid rgba(255,255,255,0.1);
+}
+
+@media (max-width:700px){
+	.alunos-grid {
+		grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+	}
+	.edit-card {
+		width: 100%;
+		padding: 24px;
+	}
+}
