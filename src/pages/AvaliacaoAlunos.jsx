@@ -1,8 +1,29 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  setAnswer,
+  setPage,
+  setSelectedStudent,
+  saveDraftNow,
+  clearDraft,
+  setStatusMessage,
+  clearStatusMessage,
+  submitEvaluation,
+} from '../redux/slices/evaluationsSlice';
 import './AvaliacaoAlunos.css';
 
 function AvaliacaoAlunos() {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  
+  const { answers, page, selectedStudent, lastSaved, statusMessage, loading } = useSelector(
+    (state) => state.evaluations
+  );
+  const { students: reportStudents } = useSelector((state) => state.reports);
+  
+  const [students, setStudents] = useState([]);
+
   // Perguntas fornecidas pelo usuário (46)
   const questions = useMemo(() => [
     "Atende as regras.",
@@ -53,85 +74,34 @@ function AvaliacaoAlunos() {
     "Traz os documentos enviados pela Instituição assinado."
   ], []);
 
-  const [answers, setAnswers] = useState({});
-  const [page, setPage] = useState(0);
-  const [students, setStudents] = useState([]);
-  const [selectedStudent, setSelectedStudent] = useState('');
   const PAGE_SIZE = 10; // perguntas por página
   const totalPages = Math.ceil(questions.length / PAGE_SIZE);
 
   const answeredCount = Object.keys(answers).length;
 
-  // localStorage key
-  const DRAFT_KEY = 'avaliacao-draft-v1';
-  const [lastSaved, setLastSaved] = useState(null);
-  const saveTimeout = useRef(null);
-  const [statusMessage, setStatusMessage] = useState('');
-
-  // carregar rascunho, se existir
+  // carregar lista de alunos do Redux
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(DRAFT_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        if (parsed.answers) setAnswers(parsed.answers);
-        if (typeof parsed.page === 'number') setPage(parsed.page);
-        if (parsed.selectedStudent) setSelectedStudent(parsed.selectedStudent);
-        setStatusMessage('Rascunho carregado');
-        setTimeout(() => setStatusMessage(''), 2500);
-      }
-    } catch (err) {
-      console.warn('Erro ao carregar rascunho', err);
+    setStudents(reportStudents);
+  }, [reportStudents]);
+
+  // Auto-clear status message
+  useEffect(() => {
+    if (statusMessage) {
+      const timer = setTimeout(() => dispatch(clearStatusMessage()), 2500);
+      return () => clearTimeout(timer);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // carregar lista de alunos (cadastrados em Relatórios -> localStorage)
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem('relatorios-v1');
-      if (raw) setStudents(JSON.parse(raw));
-    } catch (err) { console.warn('Erro ao carregar alunos', err); }
-  }, []);
-
-  // salvar automaticamente com debounce
-  useEffect(() => {
-    if (saveTimeout.current) clearTimeout(saveTimeout.current);
-    saveTimeout.current = setTimeout(() => {
-      try {
-  const payload = { answers, page, selectedStudent, updatedAt: new Date().toISOString() };
-        localStorage.setItem(DRAFT_KEY, JSON.stringify(payload));
-        setLastSaved(new Date());
-        setStatusMessage('Rascunho salvo automaticamente');
-        setTimeout(() => setStatusMessage(''), 1200);
-      } catch (err) {
-        console.warn('Erro ao salvar rascunho', err);
-      }
-    }, 600);
-    return () => { if (saveTimeout.current) clearTimeout(saveTimeout.current); };
-  }, [answers, page]);
+  }, [statusMessage, dispatch]);
 
   const handleAnswer = (index, value) => {
-    setAnswers((prev) => ({ ...prev, [index]: value }));
+    dispatch(setAnswer({ index, value }));
   };
 
-  const saveDraftNow = () => {
-    try {
-  const payload = { answers, page, selectedStudent, updatedAt: new Date().toISOString() };
-      localStorage.setItem(DRAFT_KEY, JSON.stringify(payload));
-      setLastSaved(new Date());
-      setStatusMessage('Rascunho salvo');
-      setTimeout(() => setStatusMessage(''), 1500);
-    } catch (err) {
-      alert('Falha ao salvar rascunho. Veja console.');
-      console.warn(err);
-    }
+  const handleSaveDraft = () => {
+    dispatch(saveDraftNow());
   };
 
-  const clearDraft = () => {
-    localStorage.removeItem(DRAFT_KEY);
-    setStatusMessage('Rascunho removido');
-    setTimeout(() => setStatusMessage(''), 1500);
+  const handleClearDraft = () => {
+    dispatch(clearDraft());
   };
 
   // envio via POST
@@ -144,36 +114,24 @@ function AvaliacaoAlunos() {
     }
 
     if (!selectedStudent) {
-      setStatusMessage('Selecione o aluno avaliado antes de enviar.');
-      setTimeout(()=>setStatusMessage(''), 2200);
+      dispatch(setStatusMessage('Selecione o aluno avaliado antes de enviar.'));
       return;
     }
 
     const payload = questions.map((q, i) => ({ question: q, answer: answers[i] || null }));
 
-    // endpoint configurável
-    const ENDPOINT = '/api/avaliacao';
-
-  try {
-      const res = await fetch(ENDPOINT, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ payload, submittedAt: new Date().toISOString(), studentId: selectedStudent })
-      });
-      if (!res.ok) throw new Error(`Status ${res.status}`);
-      // sucesso
-      clearDraft();
+    try {
+      await dispatch(submitEvaluation({ payload, studentId: selectedStudent })).unwrap();
       alert('Avaliação enviada com sucesso.');
-    } catch (err) {
-      console.error('Erro ao enviar avaliação', err);
+      navigate('/relatorios');
+    } catch {
       alert('Falha ao enviar. As respostas foram salvas localmente.');
-      saveDraftNow();
     }
   };
 
   return (
     <div className="avaliacao-container">
-  {/* Header provided globally by src/components/Header.jsx */}
+      {/* Header provided globally by src/components/Header.jsx */}
 
       <main className="main site-container">
         <div className="avaliacao-card card">
@@ -182,7 +140,10 @@ function AvaliacaoAlunos() {
             <div className="avaliacao-top-row">
               <div className="student-select">
                 <label>Aluno:</label>
-                <select value={selectedStudent} onChange={e=>setSelectedStudent(e.target.value)}>
+                <select 
+                  value={selectedStudent} 
+                  onChange={e => dispatch(setSelectedStudent(e.target.value))}
+                >
                   <option value="">— selecione um aluno —</option>
                   {students.map(st => <option key={st.id} value={st.id}>{st.name}</option>)}
                 </select>
@@ -196,10 +157,12 @@ function AvaliacaoAlunos() {
           </div>
 
           <div className="draft-row" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18}}>
-            <div className="draft-info">{statusMessage || (lastSaved ? `Último salvamento: ${lastSaved.toLocaleString()}` : '')}</div>
+            <div className="draft-info">
+              {statusMessage || (lastSaved ? `Último salvamento: ${new Date(lastSaved).toLocaleString()}` : '')}
+            </div>
             <div style={{display:'flex', gap:8}}>
-              <button type="button" className="btn ghost" onClick={saveDraftNow}>Salvar rascunho</button>
-              <button type="button" className="btn" onClick={() => { localStorage.removeItem(DRAFT_KEY); setAnswers({}); setPage(0); setStatusMessage('Rascunho excluído'); setTimeout(()=>setStatusMessage(''),1200); }}>Limpar rascunho</button>
+              <button type="button" className="btn ghost" onClick={handleSaveDraft}>Salvar rascunho</button>
+              <button type="button" className="btn" onClick={handleClearDraft}>Limpar rascunho</button>
             </div>
           </div>
 
@@ -236,17 +199,19 @@ function AvaliacaoAlunos() {
             <div className="avaliacao-footer">
               <div className="pagination">
                 <div style={{display:'flex', gap:8}}>
-                  <button type="button" className="page-btn" disabled={page===0} onClick={() => setPage(p => Math.max(0, p-1))}>Anterior</button>
-                  <button type="button" className="page-btn" disabled={page===totalPages-1} onClick={() => setPage(p => Math.min(totalPages-1, p+1))}>Próxima</button>
+                  <button type="button" className="page-btn" disabled={page===0} onClick={() => dispatch(setPage(Math.max(0, page-1)))}>Anterior</button>
+                  <button type="button" className="page-btn" disabled={page===totalPages-1} onClick={() => dispatch(setPage(Math.min(totalPages-1, page+1)))}>Próxima</button>
                 </div>
                 <div className="page-numbers">
                   {Array.from({ length: totalPages }, (_, i) => (
-                    <button key={i} type="button" className={`page-num ${i===page? 'active': ''}`} onClick={() => setPage(i)}>{i+1}</button>
+                    <button key={i} type="button" className={`page-num ${i===page? 'active': ''}`} onClick={() => dispatch(setPage(i))}>{i+1}</button>
                   ))}
                 </div>
                 <div style={{display:'flex', gap:8}}>
-                  <button type="button" className="btn ghost" onClick={() => { setPage(0); window.scrollTo({top:0, behavior:'smooth'}); }}>Início</button>
-                  <button type="submit" className="btn primary">Enviar avaliação</button>
+                  <button type="button" className="btn ghost" onClick={() => { dispatch(setPage(0)); window.scrollTo({top:0, behavior:'smooth'}); }}>Início</button>
+                  <button type="submit" className="btn primary" disabled={loading}>
+                    {loading ? 'Enviando...' : 'Enviar avaliação'}
+                  </button>
                 </div>
               </div>
             </div>
@@ -254,7 +219,7 @@ function AvaliacaoAlunos() {
         </div>
       </main>
 
-  {/* rodapé removido */}
+      {/* rodapé removido */}
     </div>
   );
 }

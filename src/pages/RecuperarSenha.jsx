@@ -1,9 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { resetPassword, clearError } from '../redux/slices/authSlice';
 import './RecuperarSenha.css';
 
 export default function RecuperarSenha() {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
+  
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState('');
   const [loading, setLoading] = useState(false);
@@ -15,6 +19,12 @@ export default function RecuperarSenha() {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
+  useEffect(() => {
+    return () => {
+      dispatch(clearError());
+    };
+  }, [dispatch]);
+
   const generateCode = () => String(Math.floor(100000 + Math.random() * 900000));
 
   const handleSendEmail = async (e) => {
@@ -24,12 +34,11 @@ export default function RecuperarSenha() {
     try {
       // Simula envio para backend
       await new Promise(r => setTimeout(r, 900));
-  const generated = generateCode();
-  setCodeSent(generated);
-  // debug log removed
+      const generated = generateCode();
+      setCodeSent(generated);
       setStep(2);
       setStatus('Código enviado. Verifique seu email.');
-    } catch (err) {
+    } catch {
       setStatus('Erro ao enviar. Tente novamente.');
     }
     setLoading(false);
@@ -44,12 +53,17 @@ export default function RecuperarSenha() {
 
     setLoading(true); setStatus('Verificando...');
     try {
-      await new Promise(r => setTimeout(r, 900));
-      if (code !== codeSent) { setStatus('Código inválido.'); setLoading(false); return; }
-      // Simula reset bem-sucedido
+      if (code !== codeSent) { 
+        setStatus('Código inválido.'); 
+        setLoading(false); 
+        return; 
+      }
+      
+      // Call Redux action
+      await dispatch(resetPassword({ email, code, newPassword })).unwrap();
       setStatus('Senha atualizada com sucesso. Redirecionando para login...');
       setTimeout(() => navigate('/login'), 1200);
-    } catch (err) {
+    } catch {
       setStatus('Erro ao processar. Tente novamente.');
     }
     setLoading(false);
@@ -59,11 +73,12 @@ export default function RecuperarSenha() {
     setLoading(true); setStatus('Reenviando código...');
     try {
       await new Promise(r => setTimeout(r, 700));
-  const generated = generateCode();
-  setCodeSent(generated);
-  // debug log removed
+      const generated = generateCode();
+      setCodeSent(generated);
       setStatus('Código reenviado. Confira seu email.');
-    } catch (err) { setStatus('Falha ao reenviar.'); }
+    } catch { 
+      setStatus('Falha ao reenviar.'); 
+    }
     setLoading(false);
   };
 

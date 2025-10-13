@@ -1,22 +1,21 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  setEditing,
+  clearEditing,
+  setConfirming,
+  clearConfirming,
+  setToast,
+  clearToast,
+  saveStudent,
+  removeStudent as removeStudentAction,
+} from '../redux/slices/studentsSlice';
 import './Alunos.css';
 
 function Alunos() {
-  const STORAGE_KEY = 'alunos-cadastrados-v1';
-  const [students, setStudents] = useState([]);
-  const [editing, setEditing] = useState(null);
-  const [toast, setToast] = useState('');
-  const [confirming, setConfirming] = useState(null);
+  const dispatch = useDispatch();
+  const { students, editing, confirming, toast } = useSelector((state) => state.students);
   const fileInputRef = useRef();
-
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) setStudents(JSON.parse(raw));
-    } catch (err) {
-      console.warn('Erro ao carregar alunos', err);
-    }
-  }, []);
 
   // Adicionar novo aluno
   const addNewStudent = () => {
@@ -31,82 +30,66 @@ function Alunos() {
       schoolClass: '',
       notes: ''
     };
-    setEditing(newStudent);
-    setToast('');
+    dispatch(setEditing(newStudent));
+    dispatch(clearToast());
   };
 
   // Abrir edição de aluno existente
   const openEdit = (student) => {
     if (!student) return;
-    setEditing({ ...student });
-    setToast('');
+    dispatch(setEditing({ ...student }));
+    dispatch(clearToast());
   };
 
   const closeEdit = () => {
-    setEditing(null);
+    dispatch(clearEditing());
     if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
-  const handleChange = (key, value) => setEditing(prev => ({ ...prev, [key]: value }));
+  const handleChange = (key, value) => {
+    dispatch(setEditing({ ...editing, [key]: value }));
+  };
 
   const handlePhoto = (e) => {
     const f = e.target.files && e.target.files[0];
     if (!f) return;
     const reader = new FileReader();
-    reader.onload = () => setEditing(prev => ({ ...prev, foto: reader.result }));
+    reader.onload = () => {
+      dispatch(setEditing({ ...editing, foto: reader.result }));
+    };
     reader.readAsDataURL(f);
   };
 
-  const removePhoto = () => setEditing(prev => ({ ...prev, foto: '' }));
+  const removePhoto = () => {
+    dispatch(setEditing({ ...editing, foto: '' }));
+  };
 
-  const saveStudent = () => {
+  const saveStudentHandler = () => {
     if (!editing) return;
-    if (!editing.name || editing.name.trim() === '') {
-      setToast('Nome é obrigatório');
-      setTimeout(() => setToast(''), 1800);
-      return;
-    }
-
-    let updated;
-    const exists = students.some(s => s.id === editing.id);
-    if (exists) {
-      updated = students.map(s => (s.id === editing.id ? editing : s));
-      setToast('Aluno atualizado com sucesso!');
-    } else {
-      updated = [editing, ...students];
-      setToast('Aluno cadastrado com sucesso!');
-    }
-
-    setStudents(updated);
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-      setTimeout(() => setToast(''), 2000);
-    } catch (err) {
-      console.error('Falha ao salvar aluno', err);
-      setToast('Erro ao salvar');
-      setTimeout(() => setToast(''), 2000);
-    }
-    closeEdit();
+    dispatch(saveStudent(editing));
   };
 
   const removeStudent = (id) => {
-    setConfirming(id);
+    dispatch(setConfirming(id));
   };
 
   const confirmRemove = (id) => {
-    const updated = students.filter(s => s.id !== id);
-    setStudents(updated);
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-      setToast('Aluno removido');
-      setTimeout(() => setToast(''), 1600);
-    } catch (err) {
-      console.error(err);
-    }
-    setConfirming(null);
+    dispatch(removeStudentAction(id));
+    dispatch(setToast('Aluno removido'));
+    setTimeout(() => dispatch(clearToast()), 1600);
+    dispatch(clearConfirming());
   };
 
-  const cancelRemove = () => setConfirming(null);
+  const cancelRemove = () => {
+    dispatch(clearConfirming());
+  };
+
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => dispatch(clearToast()), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast, dispatch]);
 
   return (
   <div className="alunos-container center" style={{minHeight:'calc(100vh - 56px)', display:'flex', flexDirection:'column', justifyContent:'center', alignItems:'center'}}>
@@ -233,7 +216,7 @@ function Alunos() {
             </div>
 
             <div className="modal-actions">
-              <button className="btn primary" onClick={saveStudent}>Salvar</button>
+              <button className="btn primary" onClick={saveStudentHandler}>Salvar</button>
               <button className="btn ghost" onClick={closeEdit}>Cancelar</button>
             </div>
           </div>

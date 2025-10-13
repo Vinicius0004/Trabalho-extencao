@@ -1,15 +1,16 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { Provider } from 'react-redux'
 
 import App from './App.jsx'
-import { NotificationsProvider } from './context/NotificationsContext.jsx'
+import { store } from './redux/store.js'
 import './styles/global.css'
 
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <NotificationsProvider>
+    <Provider store={store}>
       <App />
-    </NotificationsProvider>
+    </Provider>
   </StrictMode>,
 )

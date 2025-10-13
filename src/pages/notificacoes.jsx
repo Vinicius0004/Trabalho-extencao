@@ -1,18 +1,34 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  addNotification,
+  toggleNotification,
+  removeNotification,
+} from '../redux/slices/notificationsSlice';
 import './notificacoes.css';
-import { useNotifications } from '../context/NotificationsContext.jsx';
 
 function Notificacoes() {
-  const { items, add, toggle, remove } = useNotifications();
+  const dispatch = useDispatch();
+  const { items } = useSelector((state) => state.notifications);
+  
   const [title, setTitle] = useState('');
   const [when, setWhen] = useState('');
 
   const addItem = (e) => {
     e.preventDefault();
     if (!title.trim()) return;
-    add({ title: title.trim(), when });
-    setTitle(''); setWhen('');
+    dispatch(addNotification({ title: title.trim(), when }));
+    setTitle(''); 
+    setWhen('');
+  };
+
+  const toggleItem = (id) => {
+    dispatch(toggleNotification(id));
+  };
+
+  const removeItem = (id) => {
+    dispatch(removeNotification(id));
   };
 
   return (
@@ -67,25 +83,28 @@ function Notificacoes() {
                 </div>
 
                 <div className="reminder-actions">
-                  <button className="btn secondary" onClick={()=>toggle(i.id)}>{i.read? 'Marcar não lido' : 'Marcar lido'}</button>
-                  <button className="btn danger" onClick={()=>remove(i.id)}>Excluir</button>
+                  <button className="btn secondary" onClick={()=>toggleItem(i.id)}>
+                    {i.read? 'Marcar não lido' : 'Marcar lido'}
+                  </button>
+                  <button className="btn danger" onClick={()=>removeItem(i.id)}>Excluir</button>
                 </div>
               </div>
             ))}
           </div>
         </section>
       </main>
-
     </div>
   );
 }
 
-  function Back() {
-    const navigate = useNavigate();
-    return (
-      <button className="back-btn" onClick={() => navigate(-1)} aria-label="Voltar">
-        ← Voltar
-      </button>
-    );
-  }
+function Back() {
+  const navigate = useNavigate();
+  return (
+    <button className="back-btn" onClick={() => navigate(-1)} aria-label="Voltar">
+      ← Voltar
+    </button>
+  );
+}
+
 export default Notificacoes;
+

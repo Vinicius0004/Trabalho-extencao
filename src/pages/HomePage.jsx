@@ -1,27 +1,33 @@
-import React, { useState, useEffect } from 'react';
-import { Link, } from 'react-router-dom';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Link } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  toggleNotification,
+  removeNotification,
+} from '../redux/slices/notificationsSlice';
 import './HomePage.css';
-import { useNotifications } from '../context/NotificationsContext.jsx';
-// imagem removida — substituída por mensagem de boas-vindas
 
 function HomePage() {
+  const dispatch = useDispatch();
+  const { items } = useSelector((state) => state.notifications);
+  
   const [weeklyReminders, setWeeklyReminders] = useState([]);
-  const { items, toggle, remove } = useNotifications();
   const [confirming, setConfirming] = useState(null); // id being confirmed
 
   // fallback: próximos lembretes (ordenados por data) — mostrados quando não houver lembretes desta semana
-  const upcomingReminders = React.useMemo(() => {
+  const upcomingReminders = useMemo(() => {
     try {
       if (!items || !items.length) return [];
       const copy = [...items].sort((a,b) => new Date(a.when) - new Date(b.when));
       return copy.slice(0,5);
-    } catch (e) { return []; }
+    } catch { 
+      return []; 
+    }
   }, [items]);
 
   useEffect(() => {
-    // rebuild weekly list from context items whenever they change
+    // rebuild weekly list from items whenever they change
     buildWeeklyFrom(items);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [items]);
 
   const buildWeeklyFrom = (itemsList) => {
@@ -41,10 +47,14 @@ function HomePage() {
         return when >= startOfWeek && when < endOfWeek;
       });
       setWeeklyReminders(weekItems);
-    } catch (err) { console.warn('Erro ao construir lista semanal', err); }
+    } catch { 
+      console.warn('Erro ao construir lista semanal'); 
+    }
   }
 
-  const toggleRead = (id) => toggle(id);
+  const toggleRead = (id) => {
+    dispatch(toggleNotification(id));
+  };
 
   const removeReminder = (id) => {
     // show confirm modal
@@ -52,13 +62,11 @@ function HomePage() {
   }
 
   const confirmRemove = (id) => {
-    remove(id);
+    dispatch(removeNotification(id));
     setConfirming(null);
   }
 
   const cancelRemove = () => setConfirming(null);
-
-
 
   return (
   <div className="home-container center" style={{minBlockSize:'calc(100vh - 56px)', display:'flex', flexDirection:'column', justifyContent:'center', alignItems:'center'}}>
