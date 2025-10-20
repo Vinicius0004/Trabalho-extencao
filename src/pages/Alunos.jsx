@@ -7,15 +7,22 @@ import {
   clearConfirming,
   setToast,
   clearToast,
-  saveStudent,
-  removeStudent as removeStudentAction,
+  fetchStudents,
+  createStudent,
+  updateStudent,
+  deleteStudent,
 } from '../redux/slices/studentsSlice';
 import './Alunos.css';
 
 function Alunos() {
   const dispatch = useDispatch();
-  const { students, editing, confirming, toast } = useSelector((state) => state.students);
+  const { students, editing, confirming, toast, loading } = useSelector((state) => state.students);
   const fileInputRef = useRef();
+
+  // Carregar alunos ao montar o componente
+  useEffect(() => {
+    dispatch(fetchStudents());
+  }, [dispatch]);
 
   // Adicionar novo aluno
   const addNewStudent = () => {
@@ -64,19 +71,27 @@ function Alunos() {
     dispatch(setEditing({ ...editing, foto: '' }));
   };
 
-  const saveStudentHandler = () => {
+  const saveStudentHandler = async () => {
     if (!editing) return;
-    dispatch(saveStudent(editing));
+    
+    // Verificar se é novo ou atualização
+    const isNew = !students.some(s => s.id === editing.id);
+    
+    if (isNew) {
+      await dispatch(createStudent(editing));
+    } else {
+      await dispatch(updateStudent(editing));
+    }
+    
+    closeEdit();
   };
 
   const removeStudent = (id) => {
     dispatch(setConfirming(id));
   };
 
-  const confirmRemove = (id) => {
-    dispatch(removeStudentAction(id));
-    dispatch(setToast('Aluno removido'));
-    setTimeout(() => dispatch(clearToast()), 1600);
+  const confirmRemove = async (id) => {
+    await dispatch(deleteStudent(id));
     dispatch(clearConfirming());
   };
 
@@ -99,7 +114,11 @@ function Alunos() {
           <button className="btn primary" onClick={addNewStudent}>+ Adicionar Aluno</button>
         </div>
 
-        {students.length === 0 ? (
+        {loading && students.length === 0 ? (
+          <div className="empty">
+            <p>Carregando alunos...</p>
+          </div>
+        ) : students.length === 0 ? (
           <div className="empty">
             <p>Nenhum aluno cadastrado ainda.</p>
             <button className="btn primary" onClick={addNewStudent} style={{marginTop:'16px'}}>Cadastrar Primeiro Aluno</button>

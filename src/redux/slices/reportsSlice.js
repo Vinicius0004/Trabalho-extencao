@@ -1,4 +1,5 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { api } from '../../utils/api';
 
 const STORAGE_KEY = 'relatorios-v1';
 
@@ -41,20 +42,71 @@ const loadState = () => {
   }
 };
 
-// Save state to localStorage
-const saveState = (students) => {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(students));
-  } catch (err) {
-    console.warn('Failed to save reports:', err);
+// Async thunks
+export const fetchReports = createAsyncThunk(
+  'reports/fetch',
+  async (_, { rejectWithValue }) => {
+    try {
+      return await api.get('/reports', STORAGE_KEY);
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
   }
-};
+);
+
+export const createReport = createAsyncThunk(
+  'reports/create',
+  async (reportData, { rejectWithValue }) => {
+    try {
+      const newReport = {
+        ...reportData,
+        id: Date.now(),
+        evaluations: reportData.evaluations || 0,
+        marketStart: reportData.marketStart || '',
+        lastEvaluation: reportData.lastEvaluation || '',
+        lastAnswers: reportData.lastAnswers || {},
+      };
+      return await api.post('/reports', newReport, STORAGE_KEY);
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const updateReportMarketStart = createAsyncThunk(
+  'reports/updateMarketStart',
+  async ({ id, date }, { getState, rejectWithValue }) => {
+    try {
+      const state = getState();
+      const report = state.reports.students.find(s => s.id === id);
+      if (!report) throw new Error('Report not found');
+      
+      const updated = { ...report, marketStart: date };
+      return await api.put(`/reports/${id}`, updated, STORAGE_KEY);
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const deleteReport = createAsyncThunk(
+  'reports/delete',
+  async (id, { rejectWithValue }) => {
+    try {
+      return await api.delete(`/reports/${id}`, id, STORAGE_KEY);
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
 
 const initialState = {
   students: loadState(),
   searchQuery: '',
   status: '',
   confirming: null,
+  loading: false,
+  error: null,
 };
 
 const reportsSlice = createSlice({
@@ -63,24 +115,24 @@ const reportsSlice = createSlice({
   reducers: {
     setStudents: (state, action) => {
       state.students = action.payload;
-      saveState(state.students);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(action.payload));
     },
     addStudent: (state, action) => {
       state.students = [action.payload, ...state.students];
-      saveState(state.students);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.students));
     },
     updateMarketStart: (state, action) => {
       const { id, date } = action.payload;
       const student = state.students.find(s => s.id === id);
       if (student) {
         student.marketStart = date;
-        saveState(state.students);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state.students));
         state.status = 'Alteração salva.';
       }
     },
     removeStudent: (state, action) => {
       state.students = state.students.filter(s => s.id !== action.payload);
-      saveState(state.students);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.students));
     },
     setSearchQuery: (state, action) => {
       state.searchQuery = action.payload;
@@ -98,6 +150,42 @@ const reportsSlice = createSlice({
       state.confirming = null;
     },
   },
+  extraReducers: (builder) => {
+    builder
+      // Fetch
+      .addCase(fetchReports.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchReports.fulfilled, (state, action) => {
+        state.loading = false;
+        state.students = action.payload;
+      })
+      .addCase(fetchReports.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        state.students = loadState();
+      })
+      // Create
+      .addCase(createReport.fulfilled, (state, action) => {
+        state.students = [action.payload, ...state.students];
+        state.status = 'Relatório criado com sucesso!';
+      })
+      // Update market start
+      .addCase(updateReportMarketStart.fulfilled, (state, action) => {
+        const index = state.students.findIndex(s => s.id === action.payload.id);
+        if (index !== -1) {
+          state.students[index] = action.payload;
+        }
+        state.status = 'Alteração salva.';
+      })
+      // Delete
+      .addCase(deleteReport.fulfilled, (state, action) => {
+        state.students = state.students.filter(s => s.id !== action.payload);
+        state.status = 'Relatório removido.';
+        state.confirming = null;
+      });
+  },
 });
 
 export const {
@@ -113,4 +201,3 @@ export const {
 } = reportsSlice.actions;
 
 export default reportsSlice.reducer;
-

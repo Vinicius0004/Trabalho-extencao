@@ -1,6 +1,8 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { api } from '../../utils/api';
 
 const DRAFT_KEY = 'avaliacao-draft-v1';
+const STORAGE_KEY = 'avaliacoes-v1';
 
 // Load draft from localStorage
 const loadDraft = () => {
@@ -44,19 +46,44 @@ const saveDraft = (state) => {
 // Async thunk for submitting evaluation
 export const submitEvaluation = createAsyncThunk(
   'evaluations/submit',
-  async ({ payload, studentId }, { rejectWithValue }) => {
+  async ({ payload, studentId, studentName }, { rejectWithValue, getState }) => {
     try {
-      const response = await fetch('/api/avaliacao', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          payload, 
-          submittedAt: new Date().toISOString(), 
-          studentId 
-        }),
-      });
-      if (!response.ok) throw new Error(`Status ${response.status}`);
-      return await response.json();
+      const state = getState();
+      const userId = state.auth?.user?.id || 1;
+      
+      const evaluationData = {
+        studentId,
+        studentName,
+        answers: payload,
+        submittedAt: new Date().toISOString(),
+        evaluatedBy: userId,
+      };
+      
+      return await api.post('/evaluations', evaluationData, STORAGE_KEY);
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+// Fetch all evaluations
+export const fetchEvaluations = createAsyncThunk(
+  'evaluations/fetch',
+  async (_, { rejectWithValue }) => {
+    try {
+      return await api.get('/evaluations', STORAGE_KEY);
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+// Fetch evaluations by student
+export const fetchEvaluationsByStudent = createAsyncThunk(
+  'evaluations/fetchByStudent',
+  async (studentId, { rejectWithValue }) => {
+    try {
+      return await api.get(`/evaluations?studentId=${studentId}`, STORAGE_KEY);
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -73,6 +100,7 @@ const initialState = {
   statusMessage: '',
   loading: false,
   error: null,
+  evaluations: [],
 };
 
 const evaluationsSlice = createSlice({
@@ -115,16 +143,18 @@ const evaluationsSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      // Submit evaluation
       .addCase(submitEvaluation.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(submitEvaluation.fulfilled, (state) => {
+      .addCase(submitEvaluation.fulfilled, (state, action) => {
         state.loading = false;
         state.answers = {};
         state.page = 0;
         state.selectedStudent = '';
         state.lastSaved = null;
+        state.evaluations = [action.payload, ...state.evaluations];
         localStorage.removeItem(DRAFT_KEY);
         state.statusMessage = 'Avaliação enviada com sucesso!';
       })
@@ -133,6 +163,32 @@ const evaluationsSlice = createSlice({
         state.error = action.payload;
         saveDraft(state);
         state.statusMessage = 'Falha ao enviar. As respostas foram salvas localmente.';
+      })
+      // Fetch evaluations
+      .addCase(fetchEvaluations.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchEvaluations.fulfilled, (state, action) => {
+        state.loading = false;
+        state.evaluations = action.payload;
+      })
+      .addCase(fetchEvaluations.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      // Fetch by student
+      .addCase(fetchEvaluationsByStudent.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchEvaluationsByStudent.fulfilled, (state, action) => {
+        state.loading = false;
+        state.evaluations = action.payload;
+      })
+      .addCase(fetchEvaluationsByStudent.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       });
   },
 });
@@ -148,4 +204,3 @@ export const {
 } = evaluationsSlice.actions;
 
 export default evaluationsSlice.reducer;
-

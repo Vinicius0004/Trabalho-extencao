@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { api } from '../../utils/api';
 
 const STORAGE_KEY = 'auth-state-v1';
 
@@ -42,14 +43,45 @@ export const login = createAsyncThunk(
   'auth/login',
   async ({ email, password }, { rejectWithValue }) => {
     try {
-      const response = await fetch('/api/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      });
-      if (!response.ok) throw new Error('Login failed');
-      const data = await response.json();
-      return data;
+      // Buscar usuário por email
+      const response = await fetch(`http://localhost:3001/users?email=${email}`);
+      
+      if (!response.ok) {
+        // Fallback para localStorage
+        const localUsers = JSON.parse(localStorage.getItem('users-v1') || '[]');
+        const user = localUsers.find(u => u.email === email && u.password === password);
+        
+        if (!user) {
+          throw new Error('Email ou senha inválidos');
+        }
+        
+        return {
+          user: { 
+            id: user.id, 
+            name: user.name, 
+            email: user.email, 
+            role: user.role || 'user' 
+          },
+          token: `fake-jwt-${user.id}-${Date.now()}`,
+        };
+      }
+      
+      const users = await response.json();
+      const user = users.find(u => u.password === password);
+      
+      if (!user) {
+        throw new Error('Email ou senha inválidos');
+      }
+      
+      return {
+        user: { 
+          id: user.id, 
+          name: user.name, 
+          email: user.email, 
+          role: user.role || 'user' 
+        },
+        token: `fake-jwt-${user.id}-${Date.now()}`,
+      };
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -60,14 +92,60 @@ export const register = createAsyncThunk(
   'auth/register',
   async ({ email, name, password }, { rejectWithValue }) => {
     try {
-      const response = await fetch('/api/register', {
+      // Verificar se usuário já existe
+      const checkResponse = await fetch(`http://localhost:3001/users?email=${email}`);
+      
+      if (checkResponse.ok) {
+        const existingUsers = await checkResponse.json();
+        if (existingUsers.length > 0) {
+          throw new Error('Email já cadastrado');
+        }
+      }
+      
+      // Criar novo usuário
+      const newUser = {
+        id: Date.now(),
+        name,
+        email,
+        password,
+        role: 'user',
+        createdAt: new Date().toISOString(),
+      };
+      
+      const response = await fetch('http://localhost:3001/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, name, password }),
+        body: JSON.stringify(newUser),
       });
-      if (!response.ok) throw new Error('Registration failed');
-      const data = await response.json();
-      return data;
+      
+      if (!response.ok) {
+        // Fallback para localStorage
+        const localUsers = JSON.parse(localStorage.getItem('users-v1') || '[]');
+        localUsers.push(newUser);
+        localStorage.setItem('users-v1', JSON.stringify(localUsers));
+        
+        return {
+          user: { 
+            id: newUser.id, 
+            name: newUser.name, 
+            email: newUser.email, 
+            role: newUser.role 
+          },
+          token: `fake-jwt-${newUser.id}-${Date.now()}`,
+        };
+      }
+      
+      const createdUser = await response.json();
+      
+      return {
+        user: { 
+          id: createdUser.id, 
+          name: createdUser.name, 
+          email: createdUser.email, 
+          role: createdUser.role 
+        },
+        token: `fake-jwt-${createdUser.id}-${Date.now()}`,
+      };
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -78,14 +156,38 @@ export const resetPassword = createAsyncThunk(
   'auth/resetPassword',
   async ({ email, code, newPassword }, { rejectWithValue }) => {
     try {
-      const response = await fetch('/api/reset-password', {
-        method: 'POST',
+      // Buscar usuário por email
+      const response = await fetch(`http://localhost:3001/users?email=${email}`);
+      
+      if (!response.ok) {
+        throw new Error('Usuário não encontrado');
+      }
+      
+      const users = await response.json();
+      const user = users[0];
+      
+      if (!user) {
+        throw new Error('Usuário não encontrado');
+      }
+      
+      // Validar código (simplificado - em produção seria mais complexo)
+      if (code !== '123456') {
+        throw new Error('Código de verificação inválido');
+      }
+      
+      // Atualizar senha
+      const updatedUser = { ...user, password: newPassword };
+      const updateResponse = await fetch(`http://localhost:3001/users/${user.id}`, {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, code, newPassword }),
+        body: JSON.stringify(updatedUser),
       });
-      if (!response.ok) throw new Error('Password reset failed');
-      const data = await response.json();
-      return data;
+      
+      if (!updateResponse.ok) {
+        throw new Error('Erro ao atualizar senha');
+      }
+      
+      return { success: true };
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -165,4 +267,3 @@ const authSlice = createSlice({
 
 export const { logout, clearError, setUser } = authSlice.actions;
 export default authSlice.reducer;
-

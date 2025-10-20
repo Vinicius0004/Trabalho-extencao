@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Database backups and temporary files
+db.backup.json
+db.*.json
+!db.json

@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { api } from '../../utils/api';
 
 const STORAGE_KEY = 'encaminhamento-v1';
 
@@ -14,27 +15,50 @@ const loadState = () => {
   }
 };
 
-// Save state to localStorage
-const saveState = (records) => {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
-  } catch (err) {
-    console.warn('Failed to save forwarding:', err);
+// Async thunks
+export const fetchForwarding = createAsyncThunk(
+  'forwarding/fetch',
+  async (_, { rejectWithValue }) => {
+    try {
+      return await api.get('/forwarding', STORAGE_KEY);
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
   }
-};
+);
 
-// Async thunk for submitting forwarding form
 export const submitForwarding = createAsyncThunk(
   'forwarding/submit',
   async (formData, { rejectWithValue }) => {
     try {
-      const response = await fetch('/api/encaminhamento', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
-      if (!response.ok) throw new Error('Failed to submit');
-      return await response.json();
+      const newRecord = {
+        ...formData,
+        id: Date.now(),
+        createdAt: new Date().toISOString(),
+      };
+      return await api.post('/forwarding', newRecord, STORAGE_KEY);
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const updateForwarding = createAsyncThunk(
+  'forwarding/update',
+  async (formData, { rejectWithValue }) => {
+    try {
+      return await api.put(`/forwarding/${formData.id}`, formData, STORAGE_KEY);
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
+export const deleteForwarding = createAsyncThunk(
+  'forwarding/delete',
+  async (id, { rejectWithValue }) => {
+    try {
+      return await api.delete(`/forwarding/${id}`, id, STORAGE_KEY);
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -76,11 +100,11 @@ const forwardingSlice = createSlice({
     },
     addRecord: (state, action) => {
       state.records = [action.payload, ...state.records];
-      saveState(state.records);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.records));
     },
     removeRecord: (state, action) => {
       state.records = state.records.filter(r => r.id !== action.payload);
-      saveState(state.records);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.records));
     },
     setStatusMessage: (state, action) => {
       state.statusMessage = action.payload;
@@ -91,6 +115,21 @@ const forwardingSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      // Fetch
+      .addCase(fetchForwarding.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchForwarding.fulfilled, (state, action) => {
+        state.loading = false;
+        state.records = action.payload;
+      })
+      .addCase(fetchForwarding.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        state.records = loadState();
+      })
+      // Submit
       .addCase(submitForwarding.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -98,7 +137,6 @@ const forwardingSlice = createSlice({
       .addCase(submitForwarding.fulfilled, (state, action) => {
         state.loading = false;
         state.records = [action.payload, ...state.records];
-        saveState(state.records);
         state.form = {
           aluno: '',
           dataAdmissao: '',
@@ -113,6 +151,28 @@ const forwardingSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
         state.statusMessage = 'Erro ao enviar formulário';
+      })
+      // Update
+      .addCase(updateForwarding.fulfilled, (state, action) => {
+        const index = state.records.findIndex(r => r.id === action.payload.id);
+        if (index !== -1) {
+          state.records[index] = action.payload;
+        }
+        state.statusMessage = 'Registro atualizado com sucesso!';
+      })
+      // Delete
+      .addCase(deleteForwarding.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(deleteForwarding.fulfilled, (state, action) => {
+        state.loading = false;
+        state.records = state.records.filter(r => r.id !== action.payload);
+        state.statusMessage = 'Registro removido com sucesso!';
+      })
+      .addCase(deleteForwarding.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+        state.statusMessage = 'Erro ao remover registro';
       });
   },
 });
@@ -127,4 +187,3 @@ export const {
 } = forwardingSlice.actions;
 
 export default forwardingSlice.reducer;
-

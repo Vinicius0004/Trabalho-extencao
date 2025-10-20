@@ -1,0 +1,9 @@
+{
+  "/api/login": "/users",
+  "/api/register": "/users",
+  "/api/reset-password": "/users",
+  "/api/avaliacao": "/evaluations",
+  "/api/encaminhamento": "/forwarding",
+  "/api/controle-interno": "/internalControl"
+}
+
