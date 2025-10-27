@@ -4,6 +4,14 @@
   padding: 48px;
 }
 
+.error-text {
+  color: #ff4444;
+  font-size: 0.875rem;
+  margin-top: 4px;
+  display: block;
+  font-weight: 600;
+}
+
 .controleinterno-form {
   display: flex;
   flex-direction: column;
@@ -39,21 +47,39 @@
 .controleinterno-form textarea {
   margin-top: 8px;
   padding: 15px 20px;
-  border: 2px solid rgba(255,255,255,0.06);
+  border: 2px solid rgba(79,172,254,0.3);
   border-radius: var(--radius);
   font-size: 1.05rem;
-  background: rgba(10,14,39,0.5);
+  background: var(--surface);
   color: var(--text);
   font-weight: 400;
   line-height: 1.6;
   letter-spacing: 0.01em;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.controleinterno-form select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23fff' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 15px center;
+  background-size: 12px;
+  padding-right: 40px;
 }
 
 .controleinterno-form input:focus,
 .controleinterno-form select:focus,
 .controleinterno-form textarea:focus {
   outline: none;
-  border-color: var(--success);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(79,172,254,0.2);
+}
+
+.controleinterno-form input:hover,
+.controleinterno-form select:hover,
+.controleinterno-form textarea:hover {
+  border-color: rgba(79,172,254,0.5);
 }
 
 .controleinterno-form textarea {
@@ -64,7 +90,7 @@
 .controleinterno-form button {
   margin-top: 20px;
   padding: 14px 32px;
-  background: var(--success);
+  background: linear-gradient(135deg, var(--accent) 0%, var(--secondary) 100%);
   color: #fff;
   border: none;
   border-radius: var(--radius);
@@ -72,17 +98,69 @@
   font-weight: 600;
   letter-spacing: 0.02em;
   cursor: pointer;
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 4px 16px rgba(79,172,254,0.3);
   border: 1px solid rgba(255,255,255,0.1);
+  transition: all 0.3s ease;
 }
 
-@media (max-width: 768px) {
+.controleinterno-form button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(79,172,254,0.4);
+}
+
+.controleinterno-form button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+@media (max-width:992px){
   .controleinterno-container {
-    padding: 24px;
+    padding: 32px;
+    margin: 32px auto;
+  }
+  
+  .controleinterno-form {
+    padding: 40px 32px;
+  }
+}
+
+@media (max-width:768px) {
+  .controleinterno-container {
+    padding: 24px 16px;
     margin: 24px auto;
   }
   
   .controleinterno-form {
-    padding: 32px 24px;
+    padding: 28px 20px;
+  }
+  
+  .controleinterno-form h1,
+  .controleinterno-form h2 {
+    margin-bottom: 24px;
+    font-size: 1.5rem;
+  }
+  
+  .controleinterno-form input,
+  .controleinterno-form select,
+  .controleinterno-form textarea {
+    padding: 12px 16px;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width:480px){
+  .controleinterno-container {
+    padding: 16px;
+    margin: 16px auto;
+  }
+  
+  .controleinterno-form {
+    padding: 24px 16px;
+  }
+  
+  .controleinterno-form button {
+    width: 100%;
+    padding: 12px 24px;
   }
 }

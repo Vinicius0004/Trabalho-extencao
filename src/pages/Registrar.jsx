@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { register, clearError } from '../redux/slices/authSlice';
+import { validateSchema } from '../validations';
+import { registerSchema } from '../validations/authSchema';
 import './Registrar.css';
 
 export default function Registrar() {
@@ -12,7 +14,9 @@ export default function Registrar() {
 	const [email, setEmail] = useState('');
 	const [name, setName] = useState('');
 	const [password, setPassword] = useState('');
+	const [confirmPassword, setConfirmPassword] = useState('');
 	const [localStatus, setLocalStatus] = useState('');
+	const [errors, setErrors] = useState({});
 
 	useEffect(() => {
 		if (isAuthenticated) {
@@ -34,23 +38,21 @@ export default function Registrar() {
 		setTimeout(() => setLocalStatus(''), 1500);
 	};
 
-	const validate = () => {
-		if (!email.trim() || !name.trim() || !password) return 'Preencha todos os campos.';
-		// simple email regex
-		const emailRx = /^\S+@\S+\.\S+$/;
-		if (!emailRx.test(email)) return 'Email inválido.';
-		if (password.length < 6) return 'Senha deve ter pelo menos 6 caracteres.';
-		return null;
-	};
-
 	const handleSubmit = async (e) => {
 		e.preventDefault();
-		const err = validate();
-		if (err) { 
-			setLocalStatus(err); 
+		
+		const formData = { email, name, password, confirmPassword };
+		const result = await validateSchema(registerSchema, formData);
+		
+		if (!result.valid) {
+			setErrors(result.errors);
+			const firstError = Object.values(result.errors)[0];
+			setLocalStatus(firstError);
 			setTimeout(() => setLocalStatus(''), 3000);
-			return; 
+			return;
 		}
+		
+		setErrors({});
 		
 		try {
 			await dispatch(register({ email, name, password })).unwrap();
@@ -80,6 +82,7 @@ export default function Registrar() {
 							placeholder="Seu nome completo"
 							disabled={loading}
 						/>
+						{errors.name && <span className="error-text">{errors.name}</span>}
 
 						<label>Email</label>
 						<input 
@@ -89,15 +92,27 @@ export default function Registrar() {
 							placeholder="seu@exemplo.com"
 							disabled={loading}
 						/>
+						{errors.email && <span className="error-text">{errors.email}</span>}
 
 						<label>Senha</label>
 						<input 
 							type="password" 
 							value={password} 
 							onChange={e => setPassword(e.target.value)} 
-							placeholder="Mínimo 6 caracteres"
+							placeholder="Mín. 8 caracteres com maiúscula, minúscula, número e especial"
 							disabled={loading}
 						/>
+						{errors.password && <span className="error-text">{errors.password}</span>}
+
+						<label>Confirmar Senha</label>
+						<input 
+							type="password" 
+							value={confirmPassword} 
+							onChange={e => setConfirmPassword(e.target.value)} 
+							placeholder="Confirme sua senha"
+							disabled={loading}
+						/>
+						{errors.confirmPassword && <span className="error-text">{errors.confirmPassword}</span>}
 
 						<div className="actions">
 							<button type="submit" className="btn primary" disabled={loading}>

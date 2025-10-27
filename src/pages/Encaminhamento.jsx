@@ -1,22 +1,25 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   setFormField,
   submitForwarding,
   clearStatusMessage,
 } from '../redux/slices/forwardingSlice';
+import { fetchStudents } from '../redux/slices/studentsSlice';
+import { validateSchema } from '../validations';
+import { encaminhamentoSchema } from '../validations/encaminhamentoSchema';
 import './Encaminhamento.css';
-
-const alunos = [
-  'Aluno 1',
-  'Aluno 2',
-  'Aluno 3',
-  // Adicione mais alunos conforme necessário
-];
 
 export default function Encaminhamento() {
   const dispatch = useDispatch();
   const { form, loading, statusMessage } = useSelector((state) => state.forwarding);
+  const { students } = useSelector((state) => state.students);
+  const [errors, setErrors] = useState({});
+
+  // Carregar lista de alunos ao montar o componente
+  useEffect(() => {
+    dispatch(fetchStudents());
+  }, [dispatch]);
 
   useEffect(() => {
     if (statusMessage) {
@@ -31,6 +34,16 @@ export default function Encaminhamento() {
 
   async function handleSubmit(e) {
     e.preventDefault();
+    
+    // Validar com Yup
+    const result = await validateSchema(encaminhamentoSchema, form);
+    
+    if (!result.valid) {
+      setErrors(result.errors);
+      return;
+    }
+    
+    setErrors({});
     
     try {
       await dispatch(submitForwarding({
@@ -72,11 +85,12 @@ export default function Encaminhamento() {
             disabled={loading}
           >
             <option value="">Selecione</option>
-            {alunos.map((aluno, idx) => (
-              <option key={idx} value={aluno}>{aluno}</option>
+            {students.map((aluno) => (
+              <option key={aluno.id} value={aluno.name}>{aluno.name}</option>
             ))}
           </select>
         </label>
+        {errors.aluno && <span className="error-text">{errors.aluno}</span>}
         <label>
           Data da Admissão:
           <input 
@@ -87,6 +101,7 @@ export default function Encaminhamento() {
             required 
             disabled={loading}
           />
+          {errors.dataAdmissao && <span className="error-text">{errors.dataAdmissao}</span>}
         </label>
         <label>
           Empresa:
@@ -98,6 +113,7 @@ export default function Encaminhamento() {
             required 
             disabled={loading}
           />
+          {errors.empresa && <span className="error-text">{errors.empresa}</span>}
         </label>
         <label>
           Função:
@@ -109,6 +125,7 @@ export default function Encaminhamento() {
             required 
             disabled={loading}
           />
+          {errors.funcao && <span className="error-text">{errors.funcao}</span>}
         </label>
         <label>
           Contato RH:
@@ -120,6 +137,7 @@ export default function Encaminhamento() {
             required 
             disabled={loading}
           />
+          {errors.contatoRH && <span className="error-text">{errors.contatoRH}</span>}
         </label>
         <label>
           Provável Data de Desligamento:
@@ -130,6 +148,7 @@ export default function Encaminhamento() {
             onChange={handleChange} 
             disabled={loading}
           />
+          {errors.dataDesligamento && <span className="error-text">{errors.dataDesligamento}</span>}
         </label>
         <button type="submit" disabled={loading}>
           {loading ? 'Enviando...' : 'Enviar'}

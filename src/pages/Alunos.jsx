@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   setEditing,
@@ -12,12 +12,15 @@ import {
   updateStudent,
   deleteStudent,
 } from '../redux/slices/studentsSlice';
+import { validateSchema } from '../validations';
+import { studentSchema } from '../validations/studentSchema';
 import './Alunos.css';
 
 function Alunos() {
   const dispatch = useDispatch();
   const { students, editing, confirming, toast, loading } = useSelector((state) => state.students);
   const fileInputRef = useRef();
+  const [errors, setErrors] = useState({});
 
   // Carregar alunos ao montar o componente
   useEffect(() => {
@@ -73,6 +76,18 @@ function Alunos() {
 
   const saveStudentHandler = async () => {
     if (!editing) return;
+    
+    // Validar dados com Yup
+    const result = await validateSchema(studentSchema, editing);
+    
+    if (!result.valid) {
+      setErrors(result.errors);
+      const firstError = Object.values(result.errors)[0];
+      dispatch(setToast(firstError));
+      return;
+    }
+    
+    setErrors({});
     
     // Verificar se é novo ou atualização
     const isNew = !students.some(s => s.id === editing.id);
@@ -163,6 +178,7 @@ function Alunos() {
                     onChange={e=>handleChange('name', e.target.value)} 
                     placeholder="Nome completo do aluno"
                   />
+                  {errors.name && <span className="error-text">{errors.name}</span>}
                 </div>
 
                 <div className="form-row">
@@ -172,6 +188,7 @@ function Alunos() {
                     onChange={e=>handleChange('cpf', e.target.value)} 
                     placeholder="000.000.000-00"
                   />
+                  {errors.cpf && <span className="error-text">{errors.cpf}</span>}
                 </div>
 
                 <div className="form-row">
@@ -182,6 +199,7 @@ function Alunos() {
                     onChange={e=>handleChange('email', e.target.value)} 
                     placeholder="email@exemplo.com"
                   />
+                  {errors.email && <span className="error-text">{errors.email}</span>}
                 </div>
 
                 <div className="form-row">
@@ -232,6 +250,9 @@ function Alunos() {
                 rows={4}
                 placeholder="Informações adicionais sobre o aluno..."
               />
+              {(errors.descricao || errors.notes) && (
+                <span className="error-text">{errors.descricao || errors.notes}</span>
+              )}
             </div>
 
             <div className="modal-actions">

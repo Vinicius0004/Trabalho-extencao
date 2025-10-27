@@ -2,6 +2,14 @@
 	animation: fadeIn 0.8s ease;
 }
 
+.error-text {
+	color: #ff4444;
+	font-size: 0.875rem;
+	margin-top: 4px;
+	display: block;
+	font-weight: 600;
+}
+
 .alunos-container .alunos-header {
 	display: flex;
 	align-items: center;
@@ -265,12 +273,65 @@
 	border: 1px solid rgba(255,255,255,0.1);
 }
 
-@media (max-width:700px){
+@media (max-width:1200px){
+	.alunos-container .alunos-header {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 16px;
+	}
+	.form-grid {
+		grid-template-columns: 1fr;
+		gap: 24px;
+	}
+}
+
+@media (max-width:992px){
 	.alunos-grid {
-		grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+		grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+		gap: 20px;
+	}
+}
+
+@media (max-width:768px){
+	.alunos-container .alunos-header {
+		margin: 24px 0;
+	}
+	.aluno-card {
+		flex-direction: column;
+		align-items: stretch;
+		gap: 12px;
+	}
+	.aluno-actions {
+		margin-left: 0;
+		flex-direction: row;
+	}
+	.aluno-photo {
+		width: 60px;
+		height: 60px;
+		flex: 0 0 60px;
 	}
 	.edit-card {
 		width: 100%;
 		padding: 24px;
+		max-height: 85vh;
+	}
+	.photo-preview img,
+	.photo-placeholder.small {
+		width: 100px;
+		height: 100px;
+	}
+}
+
+@media (max-width:480px){
+	.alunos-grid {
+		grid-template-columns: 1fr;
+		gap: 16px;
+	}
+	.aluno-actions .btn {
+		padding: 8px 12px;
+		font-size: 0.8rem;
+	}
+	.edit-card {
+		padding: 20px;
 	}
 }

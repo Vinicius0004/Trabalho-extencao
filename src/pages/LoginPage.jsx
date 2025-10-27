@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { login, clearError } from '../redux/slices/authSlice';
+import { validateSchema } from '../validations';
+import { loginSchema } from '../validations/authSchema';
 import './LoginPage.css';
 
 function LoginPage() {
@@ -11,6 +13,7 @@ function LoginPage() {
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -26,12 +29,20 @@ function LoginPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!email.trim() || !password) {
+    
+    // Validar com Yup
+    const formData = { email, password };
+    const result = await validateSchema(loginSchema, formData);
+    
+    if (!result.valid) {
+      setErrors(result.errors);
       return;
     }
     
+    setErrors({});
+    
     try {
-      await dispatch(login({ email, password })).unwrap();
+      await dispatch(login(formData)).unwrap();
       navigate('/');
     } catch {
       // Error is handled by Redux state
@@ -54,6 +65,7 @@ function LoginPage() {
               onChange={(e) => setEmail(e.target.value)}
               disabled={loading}
             />
+            {errors.email && <span className="error-text">{errors.email}</span>}
 
             <label>Senha</label>
             <input 
@@ -63,6 +75,7 @@ function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               disabled={loading}
             />
+            {errors.password && <span className="error-text">{errors.password}</span>}
 
             {error && <div className="error-message" style={{color: 'red', marginTop: '10px'}}>{error}</div>}
 

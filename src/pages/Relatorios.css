@@ -143,7 +143,16 @@
 	border-color: rgba(168,85,247,0.3);
 }
 
-@media (max-width:900px) {
+@media (max-width:1200px){
+	.student-mid {
+		width: 240px;
+	}
+	.student-right {
+		width: 240px;
+	}
+}
+
+@media (max-width:992px) {
 	.relatorios-page .student { 
 		flex-direction: column; 
 		align-items: flex-start;
@@ -156,8 +165,34 @@
 	.student-right { 
 		align-items: flex-start;
 	}
+}
+
+@media (max-width:768px){
 	.relatorios-page .controls {
 		flex-direction: column;
 		align-items: stretch;
+		gap: 12px;
+		padding: 16px;
+	}
+	.relatorios-page .controls input {
+		width: 100%;
+	}
+	.relatorios-page .student {
+		padding: 20px;
+	}
+	.student-left h3 {
+		font-size: 1.1rem;
+	}
+}
+
+@media (max-width:480px){
+	.relatorios-page .controls {
+		padding: 14px;
+	}
+	.relatorios-page .student {
+		padding: 16px;
+	}
+	.student-left h3 {
+		font-size: 1rem;
 	}
 }

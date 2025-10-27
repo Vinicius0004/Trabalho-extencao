@@ -1,22 +1,25 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   setFormField,
   submitInternalControl,
   clearStatusMessage,
 } from '../redux/slices/internalControlSlice';
+import { fetchStudents } from '../redux/slices/studentsSlice';
+import { validateSchema } from '../validations';
+import { controleInternoSchema } from '../validations/controleInternoSchema';
 import './ControleInterno.css';
-
-const alunos = [
-  'Aluno 1',
-  'Aluno 2',
-  'Aluno 3',
-  // Adicione mais alunos conforme necessário
-];
 
 export default function ControleInterno() {
   const dispatch = useDispatch();
   const { form, loading, statusMessage } = useSelector((state) => state.internalControl);
+  const { students } = useSelector((state) => state.students);
+  const [errors, setErrors] = useState({});
+
+  // Carregar lista de alunos ao montar o componente
+  useEffect(() => {
+    dispatch(fetchStudents());
+  }, [dispatch]);
 
   useEffect(() => {
     if (statusMessage) {
@@ -31,6 +34,16 @@ export default function ControleInterno() {
 
   async function handleSubmit(e) {
     e.preventDefault();
+    
+    // Validar com Yup
+    const result = await validateSchema(controleInternoSchema, form);
+    
+    if (!result.valid) {
+      setErrors(result.errors);
+      return;
+    }
+    
+    setErrors({});
     
     try {
       await dispatch(submitInternalControl({
@@ -72,11 +85,12 @@ export default function ControleInterno() {
             disabled={loading}
           >
             <option value="">Selecione</option>
-            {alunos.map((aluno, idx) => (
-              <option key={idx} value={aluno}>{aluno}</option>
+            {students.map((aluno) => (
+              <option key={aluno.id} value={aluno.name}>{aluno.name}</option>
             ))}
           </select>
         </label>
+        {errors.aluno && <span className="error-text">{errors.aluno}</span>}
         <label>
           Ingresso:
           <input 
@@ -87,6 +101,7 @@ export default function ControleInterno() {
             required 
             disabled={loading}
           />
+          {errors.ingresso && <span className="error-text">{errors.ingresso}</span>}
         </label>
         <label>
           Primeira Avaliação:
@@ -98,6 +113,7 @@ export default function ControleInterno() {
             required 
             disabled={loading}
           />
+          {errors.primeiraAvaliacao && <span className="error-text">{errors.primeiraAvaliacao}</span>}
         </label>
         <label>
           Segunda Avaliação:
@@ -109,6 +125,7 @@ export default function ControleInterno() {
             required 
             disabled={loading}
           />
+          {errors.segundaAvaliacao && <span className="error-text">{errors.segundaAvaliacao}</span>}
         </label>
         <label>
           Primeira Entrevista com os Pais:
@@ -120,6 +137,7 @@ export default function ControleInterno() {
             required 
             disabled={loading}
           />
+          {errors.primeiraEntrevista && <span className="error-text">{errors.primeiraEntrevista}</span>}
         </label>
         <label>
           Segunda Entrevista com os Pais:
@@ -131,6 +149,7 @@ export default function ControleInterno() {
             required 
             disabled={loading}
           />
+          {errors.segundaEntrevista && <span className="error-text">{errors.segundaEntrevista}</span>}
         </label>
         <label>
           Resultado:
@@ -142,6 +161,7 @@ export default function ControleInterno() {
             required 
             disabled={loading}
           />
+          {errors.resultado && <span className="error-text">{errors.resultado}</span>}
         </label>
         <button type="submit" disabled={loading}>
           {loading ? 'Enviando...' : 'Enviar'}

@@ -33,7 +33,48 @@
 
 .reminder-actions { display:flex; gap:8px }
 
-@media (max-width: 800px) {
-  .reminder { flex-direction:column; align-items:flex-start; gap:8px }
-  .reminder-actions { width:100%; display:flex; justify-content:flex-end }
+@media (max-width:992px){
+	.reminder-row {
+		flex-direction: column;
+		align-items: stretch;
+	}
+	.reminder-date {
+		width: 100%;
+	}
+}
+
+@media (max-width:768px) {
+	.main.site-container {
+		padding: 20px 0;
+		gap: 14px;
+	}
+	.reminder { 
+		flex-direction: column; 
+		align-items: flex-start; 
+		gap: 8px;
+		padding: 12px;
+	} 
+	.reminder-actions { 
+		width: 100%; 
+		display: flex; 
+		justify-content: flex-end;
+	}
+	.new-reminder {
+		padding: 14px;
+	}
+	.reminder-list {
+		gap: 12px;
+	}
+}
+
+@media (max-width:480px) {
+	.new-reminder {
+		padding: 12px;
+	}
+	.reminder-title {
+		font-size: 0.95rem;
+	}
+	.reminder-when {
+		font-size: 0.85rem;
+	}
 }

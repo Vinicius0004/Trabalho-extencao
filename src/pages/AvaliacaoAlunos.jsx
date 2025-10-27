@@ -11,6 +11,7 @@ import {
   clearStatusMessage,
   submitEvaluation,
 } from '../redux/slices/evaluationsSlice';
+import { fetchStudents } from '../redux/slices/studentsSlice';
 import './AvaliacaoAlunos.css';
 
 function AvaliacaoAlunos() {
@@ -20,9 +21,7 @@ function AvaliacaoAlunos() {
   const { answers, page, selectedStudent, lastSaved, statusMessage, loading } = useSelector(
     (state) => state.evaluations
   );
-  const { students: reportStudents } = useSelector((state) => state.reports);
-  
-  const [students, setStudents] = useState([]);
+  const { students } = useSelector((state) => state.students);
 
   // Perguntas fornecidas pelo usuário (46)
   const questions = useMemo(() => [
@@ -79,10 +78,10 @@ function AvaliacaoAlunos() {
 
   const answeredCount = Object.keys(answers).length;
 
-  // carregar lista de alunos do Redux
+  // Carregar lista de alunos ao montar o componente
   useEffect(() => {
-    setStudents(reportStudents);
-  }, [reportStudents]);
+    dispatch(fetchStudents());
+  }, [dispatch]);
 
   // Auto-clear status message
   useEffect(() => {

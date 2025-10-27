@@ -7,7 +7,7 @@ export default function Header(){
   return (
     <header className="header site-container accent-bg">
       <nav className="nav">
-        <Link to="/">Home</Link>
+        <Link to="/">Dashboard</Link>
         <Link to="/alunos">Alunos</Link>
         <Link to="/avaliacao">Avaliações</Link>
         <Link to="/notificacoes">Notificações</Link>
