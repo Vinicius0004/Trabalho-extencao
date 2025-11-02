@@ -14,7 +14,7 @@
 /* Header navigation styles */
 .nav {
 	display: flex;
-	gap: 8px;
+	gap: 10px;
 	align-items: center;
 	justify-content: center;
 	flex-wrap: wrap;
@@ -22,15 +22,60 @@
 	z-index: 2;
 }
 
-.nav a{
+.nav-link {
 	font-size: 1rem;
 	color: var(--text);
 	text-decoration: none;
-	padding: 11px 20px;
+	padding: 12px 22px;
 	border-radius: 12px;
 	font-weight: 600;
 	letter-spacing: 0.02em;
 	line-height: 1.5;
+	margin: 2px 0;
+	transition: all var(--transition-fast);
+	position: relative;
+}
+
+.nav-link::after {
+	content: '';
+	position: absolute;
+	bottom: 6px;
+	left: 50%;
+	transform: translateX(-50%) scaleX(0);
+	width: 60%;
+	height: 2px;
+	background: var(--accent);
+	border-radius: 2px;
+	transition: transform var(--transition-fast);
+}
+
+.nav-link:hover {
+	background: rgba(255, 255, 255, 0.08);
+	color: var(--text);
+	transform: translateY(-2px);
+}
+
+.nav-link:hover::after {
+	transform: translateX(-50%) scaleX(1);
+}
+
+.nav-link.active {
+	color: var(--accent);
+	background: rgba(79, 172, 254, 0.15);
+}
+
+.nav-link.active::after {
+	transform: translateX(-50%) scaleX(1);
+}
+
+.nav-link:active {
+	transform: translateY(0);
+}
+
+.nav-link:focus-visible {
+	outline: 2px solid var(--accent);
+	outline-offset: 2px;
+	border-radius: 12px;
 }
 
 /* Tablet and smaller screens */

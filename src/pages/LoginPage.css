@@ -14,7 +14,7 @@
 	display: flex; 
 	align-items: center; 
 	justify-content: center; 
-	padding: 64px 20px;
+	padding: 72px 20px;
 	flex: 1;
 }
 
@@ -23,7 +23,7 @@
 	max-width: 500px;
 	width: 100%;
 	margin: 0 auto;
-	padding: 48px;
+	padding: 56px;
 	border-radius: var(--radius-xl);
 	background: var(--surface);
 	box-shadow: var(--shadow-xl);
@@ -37,24 +37,34 @@
 
 .register-card h2 {
 	text-align: center;
-	margin-bottom: 32px;
+	margin-bottom: 40px;
 	font-size: 2rem;
 	color: var(--accent);
 }
 
+.register-card h1 {
+	text-align: center;
+	margin-bottom: 12px;
+}
+
 .register-form label { 
 	display: block; 
-	margin-top: 20px;
-	margin-bottom: 8px;
+	margin-top: 24px;
+	margin-bottom: 10px;
 	font-weight: 700;
 	color: var(--text);
 	font-size: 0.95rem;
+}
+
+.register-form label:first-child {
+	margin-top: 0;
 }
 
 .register-form input { 
 	width: 100%; 
 	padding: 14px 18px; 
 	margin-top: 0;
+	margin-bottom: 4px;
 	border-radius: var(--radius); 
 	border: 2px solid rgba(255,255,255,0.06); 
 	background: rgba(10,14,39,0.5);
@@ -66,12 +76,31 @@
 .register-form input:focus {
 	border-color: var(--accent);
 	box-shadow: 0 0 0 4px var(--accent-200);
+	background: rgba(10,14,39,0.7);
+}
+
+.register-form input:hover:not(:disabled):not(:focus) {
+	border-color: rgba(79, 172, 254, 0.4);
+}
+
+.register-form input:invalid:not(:placeholder-shown) {
+	border-color: var(--danger);
+}
+
+.register-form input:disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
+}
+
+.register-form .error-text {
+	margin-top: 6px;
+	margin-bottom: 0;
 }
 
 .register-form .actions { 
 	display: flex; 
-	gap: 12px; 
-	margin-top: 32px; 
+	gap: 14px; 
+	margin-top: 36px; 
 	align-items: center;
 	flex-direction: column;
 }
@@ -99,11 +128,17 @@
 }
 
 @media (max-width: 992px) {
-	.register-card {
-		padding: 40px 32px;
+	.main {
+		padding: 64px 20px;
 	}
+	
+	.register-card {
+		padding: 48px 40px;
+	}
+	
 	.register-card h2 {
 		font-size: 1.75rem;
+		margin-bottom: 36px;
 	}
 }
 

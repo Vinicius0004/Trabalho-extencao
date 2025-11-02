@@ -37,46 +37,107 @@ export const studentSchema = yup.object({
   name: yup
     .string()
     .required('Nome é obrigatório')
+    .trim()
     .min(3, 'Nome deve ter pelo menos 3 caracteres')
     .max(100, 'Nome deve ter no máximo 100 caracteres')
-    .matches(/^[a-zA-ZÀ-ÿ\s]+$/, 'Nome deve conter apenas letras')
-    .trim(),
+    .test('no-only-spaces', 'Nome não pode conter apenas espaços', (value) => {
+      if (!value) return true;
+      return value.trim().length > 0;
+    })
+    .matches(/^[a-zA-ZÀ-ÿ\u00C0-\u017F\s]+$/, 'Nome deve conter apenas letras e espaços')
+    .test('no-consecutive-spaces', 'Nome não pode conter espaços consecutivos', (value) => {
+      if (!value) return true;
+      return !/\s{2,}/.test(value);
+    }),
   
   cpf: yup
     .string()
     .nullable()
-    .transform((value) => value === '' || !value ? null : value)
-    .test('cpf-format', 'CPF inválido', function(value) {
+    .transform((value) => {
+      if (!value || value === '') return null;
+      return value.trim();
+    })
+    .test('cpf-format', 'CPF deve ter 11 dígitos', function(value) {
       if (!value) return true;
       const cleanCpf = value.replace(/\D/g, '');
-      return cleanCpf.length === 11 && validateCPF(value);
+      return cleanCpf.length === 11;
+    })
+    .test('cpf-valid', 'CPF inválido', function(value) {
+      if (!value) return true;
+      return validateCPF(value);
     }),
   
   email: yup
     .string()
     .nullable()
-    .transform((value) => value === '' ? null : value)
-    .when([], ([], schema) => schema.email('Email deve ter um formato válido')),
+    .transform((value) => {
+      if (!value || value === '') return null;
+      return value.trim().toLowerCase();
+    })
+    .test('email-format', 'Email deve ter um formato válido', function(value) {
+      if (!value) return true;
+      return yup.string().email().isValidSync(value);
+    })
+    .test('valid-domain', 'Email deve ter um domínio válido', (value) => {
+      if (!value) return true;
+      const parts = value.split('@');
+      if (parts.length !== 2) return false;
+      const domain = parts[1];
+      return domain.includes('.') && !domain.startsWith('.') && !domain.endsWith('.');
+    })
+    .max(254, 'Email deve ter no máximo 254 caracteres'),
   
   pcd: yup
     .string()
     .nullable()
-    .max(100, 'PCD deve ter no máximo 100 caracteres'),
+    .transform((value) => {
+      if (!value || value === '') return null;
+      return value.trim();
+    })
+    .max(100, 'PCD deve ter no máximo 100 caracteres')
+    .test('min-length-if-provided', 'PCD deve ter pelo menos 2 caracteres', function(value) {
+      if (!value) return true;
+      return value.trim().length >= 2;
+    }),
   
   descricao: yup
     .string()
     .nullable()
-    .max(500, 'Descrição deve ter no máximo 500 caracteres'),
+    .transform((value) => {
+      if (!value || value === '') return null;
+      return value.trim();
+    })
+    .max(500, 'Descrição deve ter no máximo 500 caracteres')
+    .test('min-length-if-provided', 'Descrição deve ter pelo menos 3 caracteres', function(value) {
+      if (!value) return true;
+      return value.trim().length >= 3;
+    }),
   
   schoolClass: yup
     .string()
     .nullable()
-    .max(50, 'Turma deve ter no máximo 50 caracteres'),
+    .transform((value) => {
+      if (!value || value === '') return null;
+      return value.trim();
+    })
+    .max(50, 'Turma deve ter no máximo 50 caracteres')
+    .test('min-length-if-provided', 'Turma deve ter pelo menos 1 caractere', function(value) {
+      if (!value) return true;
+      return value.trim().length >= 1;
+    }),
   
   notes: yup
     .string()
     .nullable()
-    .max(1000, 'Anotações deve ter no máximo 1000 caracteres'),
+    .transform((value) => {
+      if (!value || value === '') return null;
+      return value.trim();
+    })
+    .max(1000, 'Anotações deve ter no máximo 1000 caracteres')
+    .test('min-length-if-provided', 'Anotações deve ter pelo menos 3 caracteres', function(value) {
+      if (!value) return true;
+      return value.trim().length >= 3;
+    }),
 });
 
 export default studentSchema;

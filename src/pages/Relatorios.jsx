@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   setSearchQuery,
@@ -6,7 +6,60 @@ import {
   clearStatus,
 } from '../redux/slices/reportsSlice';
 import { fetchStudents } from '../redux/slices/studentsSlice';
+import { fetchEvaluations } from '../redux/slices/evaluationsSlice';
+import Modal from '../components/Modal';
+import Button from '../components/Button';
 import './Relatorios.css';
+
+// Perguntas da avaliação (mesmas do AvaliacaoAlunos.jsx)
+const EVALUATION_QUESTIONS = [
+  "Atende as regras.",
+  "Socializa com o grupo.",
+  "Isola-se do grupo",
+  "Possui tolerância a frustração.",
+  "Respeita colega e professores.",
+  "Faz relatos fantasiosos.",
+  "Concentra-se nas atividades.",
+  "Tem iniciativa.",
+  "Sonolência durante as atividades em sala de aula.",
+  "Alterações intensas de humor.",
+  "Indica oscilação repentina de humor.",
+  "Irrita-se com facilidade.",
+  "Ansiedade.",
+  "Escuta quando seus colegas falam.",
+  "Escuta e segue orientação dos professores.",
+  "Mantem-se em sala de aula.",
+  "Desloca-se muito na sala.",
+  "Fala demasiadamente.",
+  "É pontual.",
+  "É assíduo.",
+  "Demonstra desejo de trabalhar.",
+  "Apropria-se indevidamente daquilo que não é seu.",
+  "Indica hábito de banho diário.",
+  "Indica habito de escovação e qualidade na escovação.",
+  "Indica cuidado com a aparência e limpeza do uniforme.",
+  "Indica autonomia quanto a estes hábitos (23, 24, 25).",
+  "Indica falta do uso de medicação com oscilações de comportamento.",
+  "Tem meio articulado de conseguir receitas e aquisições das medicações.",
+  "Traz seus materiais organizados.",
+  "Usa transporte coletivo.",
+  "Tem iniciativa diante das atividades propostas.",
+  "Localiza-se no espaço da Instituição.",
+  "Situa-se nas trocas de sala e atividades.",
+  "Interage par a par.",
+  "Interage em grupo.",
+  "Cria conflitos e intrigas.",
+  "Promove a harmonia.",
+  "Faz intrigas entre colegas x professores.",
+  "Demonstra interesse em participar das atividades extraclasses.",
+  "Você percebe que existe interação/participação da família em apoio ao usuário na Instituição.",
+  "Você percebe superproteção por parte da família quanto a autonomia do usuário.",
+  "Usuário traz relatos negativos da família (de forma geral).",
+  "Usuário traz relatos positivos da família (de forma geral).",
+  "Você percebe incentivo quanto a busca de autonomia para o usuário por parte da família.",
+  "Você percebe incentivo quanto a inserção do usuário no mercado de trabalho por parte da família.",
+  "Traz os documentos enviados pela Instituição assinado."
+];
 
 function monthsBetween(start) {
   const a = new Date(start);
@@ -21,10 +74,14 @@ export default function Relatorios() {
   const { searchQuery, status } = useSelector((state) => state.reports);
   const { students } = useSelector((state) => state.students);
   const { evaluations } = useSelector((state) => state.evaluations);
+  
+  const [selectedStudent, setSelectedStudent] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Carregar lista de alunos ao montar o componente
+  // Carregar lista de alunos e avaliações ao montar o componente
   useEffect(() => {
     dispatch(fetchStudents());
+    dispatch(fetchEvaluations());
   }, [dispatch]);
 
   const filtered = useMemo(() => {
@@ -42,7 +99,16 @@ export default function Relatorios() {
 
   // Encontrar avaliações para cada aluno
   const getStudentEvaluations = (studentId) => {
-    return evaluations.filter(e => e.studentId === studentId);
+    if (!evaluations || !Array.isArray(evaluations)) return [];
+    // Tentar comparar tanto com ID string quanto número
+    return evaluations.filter(e => {
+      const evalStudentId = String(e.studentId || e.student?.id || '');
+      const studentIdStr = String(studentId || '');
+      return evalStudentId === studentIdStr || 
+             e.studentId === studentId ||
+             e.student?.id === studentId ||
+             e.studentName === students.find(s => s.id === studentId)?.name;
+    });
   };
 
   const getLastEvaluation = (studentId) => {
@@ -63,6 +129,38 @@ export default function Relatorios() {
     if (avg <= 0) return { label: 'Mais atenção', code: 'attention', score: avg };
     return { label: 'OK', code: 'ok', score: avg };
   };
+
+  // Mapeamento de respostas para labels
+  const getAnswerLabel = (answer) => {
+    const labels = {
+      sim: 'Sim',
+      maioria: 'Maioria das vezes',
+      raras: 'Raras vezes',
+      nao: 'Não'
+    };
+    return labels[answer] || answer;
+  };
+
+  const getAnswerColor = (answer) => {
+    const colors = {
+      sim: 'var(--success)',
+      maioria: 'var(--accent)',
+      raras: 'var(--warning)',
+      nao: 'var(--danger)'
+    };
+    return colors[answer] || 'var(--muted-text)';
+  };
+
+  const handleViewEvaluations = (student) => {
+    setSelectedStudent(student);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedStudent(null);
+  };
+
 
 
   return (
@@ -129,12 +227,13 @@ export default function Relatorios() {
 
                   <div className="student-right">
                     <div className="student-actions">
-                      <button 
-                        className="btn secondary" 
-                        onClick={() => dispatch(setStatus(`Aluno: ${s.name} - ${studentEvals.length} avaliação(ões)`))}
+                      <Button
+                        variant="secondary"
+                        onClick={() => handleViewEvaluations(s)}
+                        disabled={studentEvals.length === 0}
                       >
                         Ver Avaliações ({studentEvals.length})
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -146,8 +245,174 @@ export default function Relatorios() {
         {status && <div className="status-bar">{status}</div>}
       </main>
 
+      {/* Modal de Avaliações */}
+      <Modal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        title={selectedStudent ? `Avaliações de ${selectedStudent.name}` : 'Avaliações'}
+        size="large"
+      >
+        {selectedStudent && (() => {
+          const studentEvals = getStudentEvaluations(selectedStudent.id);
+          const sortedEvals = studentEvals && studentEvals.length > 0 
+            ? [...studentEvals].sort((a, b) => {
+                const dateA = new Date(a.submittedAt || a.createdAt || 0);
+                const dateB = new Date(b.submittedAt || b.createdAt || 0);
+                return dateB - dateA;
+              })
+            : [];
 
-      {/* rodapé removido */}
+          if (studentEvals.length === 0) {
+            return (
+              <div className="evaluations-empty">
+                <p>Nenhuma avaliação registrada para este aluno.</p>
+              </div>
+            );
+          }
+
+          return (
+            <div className="evaluations-container">
+              <div className="evaluations-header">
+                <div className="evaluations-summary">
+                  <span className="evaluations-count">
+                    Total: {studentEvals.length} avaliação{studentEvals.length !== 1 ? 'ões' : ''}
+                  </span>
+                </div>
+              </div>
+
+              <div className="evaluations-list">
+                {sortedEvals.map((evalItem, index) => {
+                  // Normalizar answers para garantir que temos um objeto
+                  let normalizedAnswers = null;
+                  
+                  // Verificar diferentes formatos
+                  if (evalItem.answers) {
+                    if (typeof evalItem.answers === 'object' && !Array.isArray(evalItem.answers)) {
+                      normalizedAnswers = evalItem.answers;
+                    } else if (Array.isArray(evalItem.answers)) {
+                      // Converter array para objeto: [{question, answer}, ...] -> {0: answer, 1: answer, ...}
+                      normalizedAnswers = {};
+                      evalItem.answers.forEach((item, idx) => {
+                        if (item && typeof item === 'object' && item.answer) {
+                          normalizedAnswers[idx] = item.answer;
+                        } else if (item) {
+                          normalizedAnswers[idx] = item;
+                        }
+                      });
+                    }
+                  }
+                  
+                  // Se ainda não temos answers, tentar payload
+                  if (!normalizedAnswers && evalItem.payload && Array.isArray(evalItem.payload)) {
+                    normalizedAnswers = {};
+                    evalItem.payload.forEach((item, idx) => {
+                      if (item && typeof item === 'object' && item.answer) {
+                        normalizedAnswers[idx] = item.answer;
+                      }
+                    });
+                  }
+                  
+                  const suggestion = calcSuggestion(normalizedAnswers || evalItem.answers);
+                  const evalDate = new Date(evalItem.submittedAt || evalItem.createdAt || Date.now());
+                  
+                  return (
+                    <div key={evalItem.id || index} className="evaluation-card">
+                      <div className="evaluation-header">
+                        <div className="evaluation-info">
+                          <h4 className="evaluation-title">
+                            Avaliação #{sortedEvals.length - index}
+                          </h4>
+                          <div className="evaluation-meta">
+                            <span className="evaluation-date">
+                              {evalDate.toLocaleDateString('pt-BR', {
+                                day: '2-digit',
+                                month: '2-digit',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </span>
+                            <span 
+                              className={`suggestion suggestion-${suggestion.code}`}
+                              title={`Score: ${suggestion.score.toFixed(2)}`}
+                            >
+                              {suggestion.label}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {(() => {
+                        // Usar normalizedAnswers que já foi processado acima
+                        const answersObj = normalizedAnswers;
+                        
+                        if (answersObj && Object.keys(answersObj).length > 0) {
+                          return (
+                            <div className="evaluation-answers">
+                              <h5 className="answers-title">Respostas:</h5>
+                              <div className="answers-grid">
+                                {Object.entries(answersObj)
+                                  .sort(([a], [b]) => {
+                                    const numA = parseInt(a);
+                                    const numB = parseInt(b);
+                                    if (isNaN(numA) || isNaN(numB)) {
+                                      return a.localeCompare(b);
+                                    }
+                                    return numA - numB;
+                                  })
+                                  .map(([questionIndex, answer]) => {
+                                    const questionNum = parseInt(questionIndex);
+                                    // Se answer é um objeto, extrair o valor
+                                    const answerValue = typeof answer === 'object' && answer !== null 
+                                      ? answer.answer || answer.value || answer 
+                                      : answer;
+                                    
+                                    // Se questionIndex não é numérico, pode ser que seja um objeto com question
+                                    let questionText;
+                                    if (typeof answer === 'object' && answer !== null && answer.question) {
+                                      questionText = answer.question;
+                                    } else {
+                                      questionText = EVALUATION_QUESTIONS[questionNum] || `Questão ${questionNum + 1}`;
+                                    }
+                                    
+                                    if (!answerValue || answerValue === 'null') {
+                                      return null;
+                                    }
+                                    
+                                    return (
+                                      <div key={questionIndex} className="answer-item">
+                                        <div className="answer-question">
+                                          <strong>{isNaN(questionNum) ? questionIndex : questionNum + 1}.</strong> {questionText}
+                                        </div>
+                                        <div 
+                                          className="answer-value"
+                                          style={{ color: getAnswerColor(answerValue) }}
+                                        >
+                                          {getAnswerLabel(answerValue)}
+                                        </div>
+                                      </div>
+                                    );
+                                  })
+                                  .filter(Boolean)}
+                              </div>
+                            </div>
+                          );
+                        }
+                        
+                        return (
+                          <div className="evaluation-empty-answers">
+                            <p>Nenhuma resposta registrada nesta avaliação.</p>
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })()}
+      </Modal>
     </div>
   );
 }

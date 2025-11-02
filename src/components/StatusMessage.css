@@ -1,0 +1,91 @@
+.status-message {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 14px 20px;
+	border-radius: var(--radius);
+	margin-bottom: 24px;
+	font-weight: 600;
+	font-size: 0.95rem;
+	line-height: 1.5;
+	transition: all var(--transition-normal);
+	opacity: 0;
+	transform: translateY(-10px);
+	max-width: 100%;
+	box-shadow: var(--shadow-sm);
+	border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.status-message.status-visible {
+	opacity: 1;
+	transform: translateY(0);
+}
+
+.status-success {
+	background: rgba(16, 185, 129, 0.15);
+	color: var(--success);
+	border-color: rgba(16, 185, 129, 0.3);
+}
+
+.status-error {
+	background: rgba(244, 63, 94, 0.15);
+	color: var(--danger);
+	border-color: rgba(244, 63, 94, 0.3);
+}
+
+.status-warning {
+	background: rgba(251, 191, 36, 0.15);
+	color: var(--warning);
+	border-color: rgba(251, 191, 36, 0.3);
+}
+
+.status-info {
+	background: rgba(79, 172, 254, 0.15);
+	color: var(--accent);
+	border-color: rgba(79, 172, 254, 0.3);
+}
+
+.status-icon {
+	font-size: 1.2rem;
+	font-weight: bold;
+	flex-shrink: 0;
+	width: 24px;
+	height: 24px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.status-text {
+	flex: 1;
+	min-width: 0;
+}
+
+.status-close {
+	background: transparent;
+	border: none;
+	color: inherit;
+	cursor: pointer;
+	font-size: 18px;
+	width: 24px;
+	height: 24px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0;
+	border-radius: 4px;
+	transition: all var(--transition-fast);
+	flex-shrink: 0;
+	opacity: 0.7;
+}
+
+.status-close:hover {
+	opacity: 1;
+	background: rgba(255, 255, 255, 0.1);
+}
+
+.status-close:focus-visible {
+	outline: 2px solid currentColor;
+	outline-offset: 2px;
+}
+

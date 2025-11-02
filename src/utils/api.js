@@ -1,9 +1,4 @@
-// Helper de API para fazer requisições ao json-server
-// Com fallback para localStorage quando o servidor não estiver disponível
-
 const API_BASE = 'http://localhost:3001';
-
-// Helper para verificar se o servidor está disponível
 let serverAvailable = true;
 
 const checkServer = async () => {

@@ -1,22 +1,38 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
-import '../pages/HomePage.css';
+import { Link, useLocation } from 'react-router-dom';
+import './Header.css';
 
-export default function Header(){
-  // ...existing code...
+export default function Header() {
+  const location = useLocation();
+  
+  const isActive = (path) => location.pathname === path;
+  
+  const navLinks = [
+    { to: '/', label: 'Dashboard' },
+    { to: '/alunos', label: 'Alunos' },
+    { to: '/avaliacao', label: 'Avaliações' },
+    { to: '/notificacoes', label: 'Notificações' },
+    { to: '/relatorios', label: 'Relatórios' },
+    { to: '/controle-interno', label: 'Controle Interno' },
+    { to: '/encaminhamento', label: 'Encaminhamento' },
+    { to: '/login', label: 'Login' },
+    { to: '/registrar', label: 'Registrar' },
+  ];
+
   return (
-    <header className="header site-container accent-bg">
-      <nav className="nav">
-        <Link to="/">Dashboard</Link>
-        <Link to="/alunos">Alunos</Link>
-        <Link to="/avaliacao">Avaliações</Link>
-        <Link to="/notificacoes">Notificações</Link>
-        <Link to="/relatorios">Relatórios</Link>
-        <Link to="/controle-interno">Controle Interno</Link>
-        <Link to="/encaminhamento">Encaminhamento</Link>
-        <Link to="/login">Login</Link>
-        <Link to="/registrar">Registrar</Link>
+    <header className="header site-container accent-bg" role="banner">
+      <nav className="nav" aria-label="Navegação principal">
+        {navLinks.map((link) => (
+          <Link
+            key={link.to}
+            to={link.to}
+            className={isActive(link.to) ? 'nav-link active' : 'nav-link'}
+            aria-current={isActive(link.to) ? 'page' : undefined}
+          >
+            {link.label}
+          </Link>
+        ))}
       </nav>
     </header>
-  )
+  );
 }

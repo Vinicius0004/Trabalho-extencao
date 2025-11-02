@@ -1,13 +1,19 @@
 .encaminhamento-container {
   max-width: 800px;
-  margin: 48px auto;
-  padding: 48px;
+  margin: 56px auto;
+  padding: 56px 32px;
+}
+
+.encaminhamento-container h2 {
+  margin-bottom: 40px;
+  text-align: center;
 }
 
 .error-text {
   color: #ff4444;
   font-size: 0.875rem;
-  margin-top: 4px;
+  margin-top: 6px;
+  margin-bottom: 0;
   display: block;
   font-weight: 600;
 }
@@ -15,11 +21,11 @@
 .encaminhamento-form {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 32px;
   max-width: 100%;
   width: 100%;
   background: var(--surface);
-  padding: 48px;
+  padding: 56px;
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-xl);
   border: 1px solid rgba(255,255,255,0.1);
@@ -39,13 +45,14 @@
   color: var(--text);
   font-size: 1rem;
   letter-spacing: 0.02em;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
+  gap: 0;
 }
 
 .encaminhamento-form input,
 .encaminhamento-form select,
 .encaminhamento-form textarea {
-  margin-top: 8px;
+  margin-top: 10px;
   padding: 15px 20px;
   border: 2px solid rgba(79,172,254,0.3);
   border-radius: var(--radius);
@@ -73,13 +80,27 @@
 .encaminhamento-form textarea:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(79,172,254,0.2);
+  box-shadow: 0 0 0 4px rgba(79,172,254,0.2);
+  background: rgba(10,14,39,0.7);
 }
 
-.encaminhamento-form input:hover,
-.encaminhamento-form select:hover,
-.encaminhamento-form textarea:hover {
+.encaminhamento-form input:hover:not(:disabled):not(:focus),
+.encaminhamento-form select:hover:not(:disabled):not(:focus),
+.encaminhamento-form textarea:hover:not(:disabled):not(:focus) {
   border-color: rgba(79,172,254,0.5);
+}
+
+.encaminhamento-form input:invalid:not(:placeholder-shown),
+.encaminhamento-form select:invalid:not(:placeholder-shown),
+.encaminhamento-form textarea:invalid:not(:placeholder-shown) {
+  border-color: var(--danger);
+}
+
+.encaminhamento-form input:disabled,
+.encaminhamento-form select:disabled,
+.encaminhamento-form textarea:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .encaminhamento-form textarea {
@@ -88,7 +109,7 @@
 }
 
 .encaminhamento-form button {
-  margin-top: 20px;
+  margin-top: 32px;
   padding: 14px 32px;
   background: linear-gradient(135deg, var(--accent) 0%, var(--secondary) 100%);
   color: #fff;
@@ -108,20 +129,35 @@
   box-shadow: 0 6px 20px rgba(79,172,254,0.4);
 }
 
+.encaminhamento-form button:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 16px rgba(79,172,254,0.3);
+}
+
 .encaminhamento-form button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;
 }
 
+.encaminhamento-form button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
 @media (max-width:992px){
   .encaminhamento-container {
-    padding: 32px;
-    margin: 32px auto;
+    padding: 48px 28px;
+    margin: 48px auto;
+  }
+  
+  .encaminhamento-container h2 {
+    margin-bottom: 36px;
   }
   
   .encaminhamento-form {
-    padding: 40px 32px;
+    padding: 48px 36px;
+    gap: 28px;
   }
 }
 
