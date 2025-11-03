@@ -1,13 +1,16 @@
 .alunos-container {
-	animation: fadeIn 0.8s ease;
+	animation: fadeIn var(--transition-slow) ease;
+	min-height: 100vh;
 }
 
 .error-text {
-	color: #ff4444;
+	color: var(--danger);
 	font-size: 0.875rem;
-	margin-top: 4px;
+	margin-top: 6px;
+	margin-bottom: 0;
 	display: block;
 	font-weight: 600;
+	line-height: 1.4;
 }
 
 .alunos-container .alunos-header {

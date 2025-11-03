@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   toggleNotification,
@@ -8,10 +8,12 @@ import {
 import { fetchEvaluations } from '../redux/slices/evaluationsSlice';
 import { fetchForwarding } from '../redux/slices/forwardingSlice';
 import { fetchInternalControl } from '../redux/slices/internalControlSlice';
+import { setSelectedStudent } from '../redux/slices/evaluationsSlice';
 import './HomePage.css';
 
 function HomePage() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { items } = useSelector((state) => state.notifications);
   const students = useSelector((state) => state.students.students || []);
   const evaluations = useSelector((state) => state.evaluations.evaluations || []);
@@ -81,6 +83,13 @@ function HomePage() {
   }
 
   const cancelRemove = () => setConfirming(null);
+
+  // Handler para avaliar um aluno específico
+  const handleEvaluateStudent = (studentId) => {
+    // Definir o aluno selecionado no Redux para pré-selecionar na página de avaliação
+    dispatch(setSelectedStudent(studentId));
+    navigate('/avaliacao');
+  };
 
   // Calculate dashboard metrics
   const stats = useMemo(() => {
@@ -168,7 +177,7 @@ function HomePage() {
       {/* Main Content Area - 2 Columns */}
       <div className="dashboard-content-grid">
         {/* Column 1: Pending Students */}
-        {pendingStudents.length > 0 && (
+        {pendingStudents.length > 0 ? (
           <div className="dashboard-section">
             <div className="section-header">
               <h2>Alunos Pendentes</h2>
@@ -182,15 +191,20 @@ function HomePage() {
                     <p className="student-name">{student.name}</p>
                     <span className="student-info">{student.grade || 'Sem série'}</span>
                   </div>
-                  <Link to="/avaliacao-alunos" className="action-btn">Avaliar</Link>
+                  <button 
+                    onClick={() => handleEvaluateStudent(student.id)}
+                    className="action-btn"
+                  >
+                    Avaliar
+                  </button>
                 </div>
               ))}
             </div>
           </div>
-        )}
+        ) : null}
 
         {/* Column 2: Quick Links */}
-        <div className="dashboard-section">
+        <div className={`dashboard-section ${pendingStudents.length === 0 ? 'dashboard-section-full' : ''}`}>
           <div className="section-header">
             <h2>Acesso Rápido</h2>
           </div>
@@ -200,7 +214,7 @@ function HomePage() {
               <h3>Alunos</h3>
               <p>Gerenciar cadastros</p>
             </Link>
-            <Link to="/avaliacao-alunos" className="quick-link-card">
+            <Link to="/avaliacao" className="quick-link-card">
               <div className="quick-link-icon">📝</div>
               <h3>Avaliações</h3>
               <p>Criar avaliações</p>
@@ -279,11 +293,11 @@ function HomePage() {
 
       {/* Confirmation Modal */}
       {confirming && (
-        <div className="modal-backdrop">
-          <div className="modal card">
+        <div className="modal-backdrop" onClick={cancelRemove}>
+          <div className="modal card" onClick={(e) => e.stopPropagation()}>
             <h3>Confirmar exclusão</h3>
             <p>Deseja realmente excluir este lembrete?</p>
-            <div style={{display:'flex',gap:10,justifyContent:'flex-end',marginTop:12}}>
+            <div className="modal-actions">
               <button className="btn ghost" onClick={cancelRemove}>Cancelar</button>
               <button className="btn danger" onClick={() => confirmRemove(confirming)}>Excluir</button>
             </div>

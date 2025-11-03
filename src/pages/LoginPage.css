@@ -3,7 +3,7 @@
 	display: flex; 
 	flex-direction: column; 
 	min-height: 100vh;
-	animation: fadeIn 0.8s ease;
+	animation: fadeIn var(--transition-slow) ease;
 }
 
 .header.site-container { 
@@ -31,7 +31,7 @@
 	backdrop-filter: blur(20px);
 	position: relative;
 	overflow: hidden;
-	animation: modalSlideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+	animation: modalSlideIn var(--transition-normal) cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 
@@ -62,15 +62,15 @@
 
 .register-form input { 
 	width: 100%; 
-	padding: 14px 18px; 
+	padding: 15px 20px; 
 	margin-top: 0;
 	margin-bottom: 4px;
 	border-radius: var(--radius); 
 	border: 2px solid rgba(255,255,255,0.06); 
 	background: rgba(10,14,39,0.5);
 	color: var(--text);
-	font-size: 1rem;
-	transition: all 0.3s ease;
+	font-size: 1.05rem;
+	transition: all var(--transition-fast);
 }
 
 .register-form input:focus {

@@ -23,12 +23,13 @@
 }
 
 .error-text {
-  color: #ff4444;
+  color: var(--danger);
   font-size: 0.875rem;
   margin-top: 6px;
   margin-bottom: 0;
   display: block;
   font-weight: 600;
+  line-height: 1.4;
 }
 
 .controleinterno-form {
@@ -75,7 +76,7 @@
   font-weight: 400;
   line-height: 1.6;
   letter-spacing: 0.01em;
-  transition: all 0.3s ease;
+  transition: all var(--transition-fast);
   cursor: pointer;
 }
 
@@ -122,8 +123,8 @@
 }
 
 .controleinterno-form button {
-  margin-top: 32px;
-  padding: 14px 32px;
+  margin-top: 36px;
+  padding: 15px 36px;
   background: linear-gradient(135deg, var(--accent) 0%, var(--secondary) 100%);
   color: #fff;
   border: none;
@@ -134,7 +135,7 @@
   cursor: pointer;
   box-shadow: 0 4px 16px rgba(79,172,254,0.3);
   border: 1px solid rgba(255,255,255,0.1);
-  transition: all 0.3s ease;
+  transition: all var(--transition-fast);
 }
 
 .controleinterno-form button:hover {

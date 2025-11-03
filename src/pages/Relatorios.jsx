@@ -7,6 +7,8 @@ import {
 } from '../redux/slices/reportsSlice';
 import { fetchStudents } from '../redux/slices/studentsSlice';
 import { fetchEvaluations } from '../redux/slices/evaluationsSlice';
+import { fetchForwarding } from '../redux/slices/forwardingSlice';
+import { fetchInternalControl } from '../redux/slices/internalControlSlice';
 import Modal from '../components/Modal';
 import Button from '../components/Button';
 import './Relatorios.css';
@@ -74,14 +76,19 @@ export default function Relatorios() {
   const { searchQuery, status } = useSelector((state) => state.reports);
   const { students } = useSelector((state) => state.students);
   const { evaluations } = useSelector((state) => state.evaluations);
+  const { records: forwardingRecords } = useSelector((state) => state.forwarding);
+  const { records: internalControlRecords } = useSelector((state) => state.internalControl);
   
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalType, setModalType] = useState(null); // 'evaluations', 'forwarding', 'internalControl'
 
   // Carregar lista de alunos e avaliações ao montar o componente
   useEffect(() => {
     dispatch(fetchStudents());
     dispatch(fetchEvaluations());
+    dispatch(fetchForwarding());
+    dispatch(fetchInternalControl());
   }, [dispatch]);
 
   const filtered = useMemo(() => {
@@ -153,12 +160,38 @@ export default function Relatorios() {
 
   const handleViewEvaluations = (student) => {
     setSelectedStudent(student);
+    setModalType('evaluations');
+    setIsModalOpen(true);
+  };
+
+  const handleViewForwarding = (student) => {
+    setSelectedStudent(student);
+    setModalType('forwarding');
+    setIsModalOpen(true);
+  };
+
+  const handleViewInternalControl = (student) => {
+    setSelectedStudent(student);
+    setModalType('internalControl');
     setIsModalOpen(true);
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setSelectedStudent(null);
+    setModalType(null);
+  };
+
+  // Buscar encaminhamentos do aluno
+  const getStudentForwarding = (studentName) => {
+    if (!forwardingRecords || !Array.isArray(forwardingRecords)) return [];
+    return forwardingRecords.filter(f => f.aluno === studentName);
+  };
+
+  // Buscar controle interno do aluno
+  const getStudentInternalControl = (studentName) => {
+    if (!internalControlRecords || !Array.isArray(internalControlRecords)) return [];
+    return internalControlRecords.filter(c => c.aluno === studentName);
   };
 
 
@@ -234,6 +267,20 @@ export default function Relatorios() {
                       >
                         Ver Avaliações ({studentEvals.length})
                       </Button>
+                      <Button
+                        variant="ghost"
+                        onClick={() => handleViewForwarding(s)}
+                        disabled={getStudentForwarding(s.name).length === 0}
+                      >
+                        Encaminhamentos ({getStudentForwarding(s.name).length})
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        onClick={() => handleViewInternalControl(s)}
+                        disabled={getStudentInternalControl(s.name).length === 0}
+                      >
+                        Controle Interno ({getStudentInternalControl(s.name).length})
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -245,14 +292,19 @@ export default function Relatorios() {
         {status && <div className="status-bar">{status}</div>}
       </main>
 
-      {/* Modal de Avaliações */}
+      {/* Modal de Informações */}
       <Modal
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        title={selectedStudent ? `Avaliações de ${selectedStudent.name}` : 'Avaliações'}
+        title={selectedStudent ? (
+          modalType === 'evaluations' ? `Avaliações de ${selectedStudent.name}` :
+          modalType === 'forwarding' ? `Encaminhamentos de ${selectedStudent.name}` :
+          modalType === 'internalControl' ? `Controle Interno de ${selectedStudent.name}` :
+          'Informações'
+        ) : 'Informações'}
         size="large"
       >
-        {selectedStudent && (() => {
+        {selectedStudent && modalType === 'evaluations' && (() => {
           const studentEvals = getStudentEvaluations(selectedStudent.id);
           const sortedEvals = studentEvals && studentEvals.length > 0 
             ? [...studentEvals].sort((a, b) => {
@@ -408,6 +460,193 @@ export default function Relatorios() {
                     </div>
                   );
                 })}
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* Modal de Encaminhamentos */}
+        {selectedStudent && modalType === 'forwarding' && (() => {
+          const studentForwarding = getStudentForwarding(selectedStudent.name);
+          const sortedForwarding = studentForwarding && studentForwarding.length > 0
+            ? [...studentForwarding].sort((a, b) => {
+                const dateA = new Date(a.dataAdmissao || a.createdAt || 0);
+                const dateB = new Date(b.dataAdmissao || b.createdAt || 0);
+                return dateB - dateA;
+              })
+            : [];
+
+          if (studentForwarding.length === 0) {
+            return (
+              <div className="evaluations-empty">
+                <p>Nenhum encaminhamento registrado para este aluno.</p>
+              </div>
+            );
+          }
+
+          return (
+            <div className="evaluations-container">
+              <div className="evaluations-header">
+                <div className="evaluations-summary">
+                  <span className="evaluations-count">
+                    Total: {studentForwarding.length} encaminhamento{studentForwarding.length !== 1 ? 's' : ''}
+                  </span>
+                </div>
+              </div>
+
+              <div className="evaluations-list">
+                {sortedForwarding.map((forwardingItem, index) => (
+                  <div key={forwardingItem.id || index} className="evaluation-card">
+                    <div className="evaluation-header">
+                      <div className="evaluation-info">
+                        <h4 className="evaluation-title">
+                          Encaminhamento #{sortedForwarding.length - index}
+                        </h4>
+                        <div className="evaluation-meta">
+                          <span className="evaluation-date">
+                            {forwardingItem.createdAt 
+                              ? new Date(forwardingItem.createdAt).toLocaleDateString('pt-BR', {
+                                  day: '2-digit',
+                                  month: '2-digit',
+                                  year: 'numeric'
+                                })
+                              : 'Data não informada'}
+                          </span>
+                          {!forwardingItem.dataDesligamento && (
+                            <span className="suggestion suggestion-ok">
+                              Ativo
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="evaluation-answers">
+                      <div className="info-grid">
+                        <div className="info-item">
+                          <strong>Data de Admissão:</strong>
+                          <span>{forwardingItem.dataAdmissao 
+                            ? new Date(forwardingItem.dataAdmissao).toLocaleDateString('pt-BR')
+                            : 'Não informado'}</span>
+                        </div>
+                        <div className="info-item">
+                          <strong>Empresa:</strong>
+                          <span>{forwardingItem.empresa || 'Não informado'}</span>
+                        </div>
+                        <div className="info-item">
+                          <strong>Função:</strong>
+                          <span>{forwardingItem.funcao || 'Não informado'}</span>
+                        </div>
+                        <div className="info-item">
+                          <strong>Contato RH:</strong>
+                          <span>{forwardingItem.contatoRH || 'Não informado'}</span>
+                        </div>
+                        {forwardingItem.dataDesligamento && (
+                          <div className="info-item">
+                            <strong>Data de Desligamento:</strong>
+                            <span>{new Date(forwardingItem.dataDesligamento).toLocaleDateString('pt-BR')}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* Modal de Controle Interno */}
+        {selectedStudent && modalType === 'internalControl' && (() => {
+          const studentControl = getStudentInternalControl(selectedStudent.name);
+          const sortedControl = studentControl && studentControl.length > 0
+            ? [...studentControl].sort((a, b) => {
+                const dateA = new Date(a.ingresso || a.createdAt || 0);
+                const dateB = new Date(b.ingresso || b.createdAt || 0);
+                return dateB - dateA;
+              })
+            : [];
+
+          if (studentControl.length === 0) {
+            return (
+              <div className="evaluations-empty">
+                <p>Nenhum registro de controle interno para este aluno.</p>
+              </div>
+            );
+          }
+
+          return (
+            <div className="evaluations-container">
+              <div className="evaluations-header">
+                <div className="evaluations-summary">
+                  <span className="evaluations-count">
+                    Total: {studentControl.length} registro{studentControl.length !== 1 ? 's' : ''}
+                  </span>
+                </div>
+              </div>
+
+              <div className="evaluations-list">
+                {sortedControl.map((controlItem, index) => (
+                  <div key={controlItem.id || index} className="evaluation-card">
+                    <div className="evaluation-header">
+                      <div className="evaluation-info">
+                        <h4 className="evaluation-title">
+                          Registro #{sortedControl.length - index}
+                        </h4>
+                        <div className="evaluation-meta">
+                          <span className="evaluation-date">
+                            {controlItem.createdAt 
+                              ? new Date(controlItem.createdAt).toLocaleDateString('pt-BR', {
+                                  day: '2-digit',
+                                  month: '2-digit',
+                                  year: 'numeric'
+                                })
+                              : 'Data não informada'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="evaluation-answers">
+                      <div className="info-grid">
+                        <div className="info-item">
+                          <strong>Data de Ingresso:</strong>
+                          <span>{controlItem.ingresso 
+                            ? new Date(controlItem.ingresso).toLocaleDateString('pt-BR')
+                            : 'Não informado'}</span>
+                        </div>
+                        <div className="info-item">
+                          <strong>Primeira Avaliação:</strong>
+                          <span>{controlItem.primeiraAvaliacao 
+                            ? new Date(controlItem.primeiraAvaliacao).toLocaleDateString('pt-BR')
+                            : 'Não informado'}</span>
+                        </div>
+                        <div className="info-item">
+                          <strong>Segunda Avaliação:</strong>
+                          <span>{controlItem.segundaAvaliacao 
+                            ? new Date(controlItem.segundaAvaliacao).toLocaleDateString('pt-BR')
+                            : 'Não informado'}</span>
+                        </div>
+                        <div className="info-item">
+                          <strong>Primeira Entrevista:</strong>
+                          <span>{controlItem.primeiraEntrevista 
+                            ? new Date(controlItem.primeiraEntrevista).toLocaleDateString('pt-BR')
+                            : 'Não informado'}</span>
+                        </div>
+                        <div className="info-item">
+                          <strong>Segunda Entrevista:</strong>
+                          <span>{controlItem.segundaEntrevista 
+                            ? new Date(controlItem.segundaEntrevista).toLocaleDateString('pt-BR')
+                            : 'Não informado'}</span>
+                        </div>
+                        <div className="info-item">
+                          <strong>Resultado:</strong>
+                          <span>{controlItem.resultado || 'Não informado'}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           );
