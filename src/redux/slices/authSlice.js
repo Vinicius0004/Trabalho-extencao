@@ -43,34 +43,73 @@ export const login = createAsyncThunk(
   'auth/login',
   async ({ email, password }, { rejectWithValue }) => {
     try {
-      // Buscar usuário por email
-      const response = await fetch(`http://localhost:3001/users?email=${email}`);
+      // Normalizar email para lowercase para comparação
+      const normalizedEmail = email.toLowerCase().trim();
       
-      if (!response.ok) {
-        // Fallback para localStorage
-        const localUsers = JSON.parse(localStorage.getItem('users-v1') || '[]');
-        const user = localUsers.find(u => u.email === email && u.password === password);
-        
-        if (!user) {
-          throw new Error('Email ou senha inválidos');
+      // Tentar buscar do servidor primeiro
+      let users = [];
+      let serverAvailable = false;
+      
+      try {
+        const response = await fetch(`http://localhost:3001/users?email=${encodeURIComponent(normalizedEmail)}`);
+        if (response.ok) {
+          users = await response.json();
+          serverAvailable = true;
+        } else {
+          throw new Error('Server not available');
         }
-        
-        return {
-          user: { 
-            id: user.id, 
-            name: user.name, 
-            email: user.email, 
-            role: user.role || 'user' 
-          },
-          token: `fake-jwt-${user.id}-${Date.now()}`,
-        };
+      } catch (serverError) {
+        // Servidor não disponível, usar localStorage
+        console.warn('Servidor não disponível, usando localStorage');
+        const localUsers = JSON.parse(localStorage.getItem('users-v1') || '[]');
+        users = localUsers;
       }
       
-      const users = await response.json();
-      const user = users.find(u => u.password === password);
+      // Se não encontrou no servidor, tentar também no db.json via localStorage como backup
+      if (users.length === 0 && !serverAvailable) {
+        // Tentar carregar do db.json simulado (para desenvolvimento)
+        try {
+          const dbResponse = await fetch('/db.json');
+          if (dbResponse.ok) {
+            const dbData = await dbResponse.json();
+            if (dbData.users && dbData.users.length > 0) {
+              users = dbData.users;
+              // Salvar no localStorage para uso futuro
+              localStorage.setItem('users-v1', JSON.stringify(dbData.users));
+            }
+          }
+        } catch (dbError) {
+          console.warn('Não foi possível carregar db.json');
+          // Se ainda não encontrou, verificar se há dados no localStorage
+          const localUsers = JSON.parse(localStorage.getItem('users-v1') || '[]');
+          if (localUsers.length > 0) {
+            users = localUsers;
+          }
+        }
+      }
+      
+      // Buscar usuário por email (case-insensitive)
+      const user = users.find(u => 
+        u.email && u.email.toLowerCase().trim() === normalizedEmail
+      );
       
       if (!user) {
-        throw new Error('Email ou senha inválidos');
+        return rejectWithValue('Email ou senha inválidos');
+      }
+      
+      // Verificar senha
+      if (user.password !== password) {
+        return rejectWithValue('Email ou senha inválidos');
+      }
+      
+      // Salvar no localStorage como backup se não estava lá
+      if (!serverAvailable && user) {
+        const localUsers = JSON.parse(localStorage.getItem('users-v1') || '[]');
+        const userExists = localUsers.find(u => u.id === user.id);
+        if (!userExists) {
+          localUsers.push(user);
+          localStorage.setItem('users-v1', JSON.stringify(localUsers));
+        }
       }
       
       return {
@@ -83,7 +122,7 @@ export const login = createAsyncThunk(
         token: `fake-jwt-${user.id}-${Date.now()}`,
       };
     } catch (error) {
-      return rejectWithValue(error.message);
+      return rejectWithValue(error.message || 'Erro ao fazer login. Tente novamente.');
     }
   }
 );

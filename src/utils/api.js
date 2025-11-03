@@ -1,10 +1,20 @@
+import axios from 'axios';
+
 const API_BASE = 'http://localhost:3001';
 let serverAvailable = true;
 
+// Criando uma instância do axios com configurações padrão
+const axiosInstance = axios.create({
+  baseURL: API_BASE,
+  headers: {
+    'Content-Type': 'application/json'
+  }
+});
+
 const checkServer = async () => {
   try {
-    const response = await fetch(`${API_BASE}/users`, { method: 'HEAD' });
-    serverAvailable = response.ok;
+    const response = await axiosInstance.head('/users');
+    serverAvailable = response.status >= 200 && response.status < 300;
     return serverAvailable;
   } catch {
     serverAvailable = false;
@@ -17,9 +27,8 @@ const api = {
   // GET - Buscar dados
   get: async (endpoint, storageKey = null) => {
     try {
-      const response = await fetch(`${API_BASE}${endpoint}`);
-      if (!response.ok) throw new Error(`GET ${endpoint} failed`);
-      const data = await response.json();
+      const response = await axiosInstance.get(endpoint);
+      const data = response.data;
       
       // Salvar no localStorage como backup
       if (storageKey) {
@@ -43,14 +52,8 @@ const api = {
   // POST - Criar novo registro
   post: async (endpoint, data, storageKey = null) => {
     try {
-      const response = await fetch(`${API_BASE}${endpoint}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-      
-      if (!response.ok) throw new Error(`POST ${endpoint} failed`);
-      const result = await response.json();
+      const response = await axiosInstance.post(endpoint, data);
+      const result = response.data;
       
       // Atualizar localStorage
       if (storageKey) {
@@ -77,14 +80,8 @@ const api = {
   // PUT - Atualizar registro completo
   put: async (endpoint, data, storageKey = null) => {
     try {
-      const response = await fetch(`${API_BASE}${endpoint}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-      
-      if (!response.ok) throw new Error(`PUT ${endpoint} failed`);
-      const result = await response.json();
+      const response = await axiosInstance.put(endpoint, data);
+      const result = response.data;
       
       // Atualizar localStorage
       if (storageKey) {
@@ -116,14 +113,8 @@ const api = {
   // PATCH - Atualizar registro parcial
   patch: async (endpoint, data, storageKey = null) => {
     try {
-      const response = await fetch(`${API_BASE}${endpoint}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-      
-      if (!response.ok) throw new Error(`PATCH ${endpoint} failed`);
-      const result = await response.json();
+      const response = await axiosInstance.patch(endpoint, data);
+      const result = response.data;
       
       // Atualizar localStorage
       if (storageKey) {
@@ -155,11 +146,7 @@ const api = {
   // DELETE - Remover registro
   delete: async (endpoint, id, storageKey = null) => {
     try {
-      const response = await fetch(`${API_BASE}${endpoint}`, {
-        method: 'DELETE',
-      });
-      
-      if (!response.ok) throw new Error(`DELETE ${endpoint} failed`);
+      await axiosInstance.delete(endpoint);
       
       // Remover do localStorage
       if (storageKey) {
@@ -185,5 +172,4 @@ const api = {
   },
 };
 
-export { api, checkServer, API_BASE };
-
+export { api, checkServer, API_BASE };

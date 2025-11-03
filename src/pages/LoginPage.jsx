@@ -30,8 +30,11 @@ function LoginPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Validar com Yup
-    const formData = { email, password };
+    // Validar com Yup (normalizar email para validação)
+    const formData = { 
+      email: email.toLowerCase().trim(), 
+      password 
+    };
     const result = await validateSchema(loginSchema, formData);
     
     if (!result.valid) {
@@ -40,12 +43,14 @@ function LoginPage() {
     }
     
     setErrors({});
+    dispatch(clearError());
     
     try {
-      await dispatch(login(formData)).unwrap();
+      await dispatch(login({ email: formData.email, password: formData.password })).unwrap();
       navigate('/');
-    } catch {
+    } catch (error) {
       // Error is handled by Redux state
+      console.error('Login error:', error);
     }
   };
 

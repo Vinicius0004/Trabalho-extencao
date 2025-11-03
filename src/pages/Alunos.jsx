@@ -14,7 +14,42 @@ import {
 } from '../redux/slices/studentsSlice';
 import { validateSchema } from '../validations';
 import { studentSchema } from '../validations/studentSchema';
+import Select from '../components/Select';
 import './Alunos.css';
+
+// Opções de séries/turmas disponíveis
+const SERIES_OPTIONS = [
+  // Ensino Fundamental I
+  { value: '1º Ano EF I', label: '1º Ano EF I' },
+  { value: '2º Ano EF I', label: '2º Ano EF I' },
+  { value: '3º Ano EF I', label: '3º Ano EF I' },
+  { value: '4º Ano EF I', label: '4º Ano EF I' },
+  { value: '5º Ano EF I', label: '5º Ano EF I' },
+  
+  // Ensino Fundamental II
+  { value: '1º Ano EF II', label: '1º Ano EF II (6º Ano)' },
+  { value: '2º Ano EF II', label: '2º Ano EF II (7º Ano)' },
+  { value: '3º Ano EF II', label: '3º Ano EF II (8º Ano)' },
+  { value: '4º Ano EF II', label: '4º Ano EF II (9º Ano)' },
+  
+  // Ensino Médio
+  { value: '1º Ano EM', label: '1º Ano EM' },
+  { value: '2º Ano EM', label: '2º Ano EM' },
+  { value: '3º Ano EM', label: '3º Ano EM' },
+  
+  // EJA (Educação de Jovens e Adultos)
+  { value: 'EJA - Fundamental', label: 'EJA - Ensino Fundamental' },
+  { value: 'EJA - Médio', label: 'EJA - Ensino Médio' },
+  
+  // Educação Profissional
+  { value: 'Técnico Integrado - 1º Ano', label: 'Técnico Integrado - 1º Ano' },
+  { value: 'Técnico Integrado - 2º Ano', label: 'Técnico Integrado - 2º Ano' },
+  { value: 'Técnico Integrado - 3º Ano', label: 'Técnico Integrado - 3º Ano' },
+  { value: 'Técnico Integrado - 4º Ano', label: 'Técnico Integrado - 4º Ano' },
+  
+  // Outras
+  { value: 'Outro', label: 'Outro' },
+];
 
 function Alunos() {
   const dispatch = useDispatch();
@@ -211,14 +246,14 @@ function Alunos() {
                   />
                 </div>
 
-                <div className="form-row">
-                  <label>Série / Turma</label>
-                  <input 
-                    value={editing.schoolClass || ''} 
-                    onChange={e=>handleChange('schoolClass', e.target.value)} 
-                    placeholder="Ex: 3º Ano A"
-                  />
-                </div>
+                <Select
+                  label="Série / Turma"
+                  value={editing.schoolClass || ''}
+                  onChange={e => handleChange('schoolClass', e.target.value)}
+                  options={SERIES_OPTIONS}
+                  placeholder="Selecione a série/turma"
+                  error={errors.schoolClass}
+                />
               </div>
 
               <div className="form-right-section">
